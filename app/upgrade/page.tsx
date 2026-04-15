@@ -115,7 +115,7 @@ export default function UpgradePage() {
         {isPremium ? (
           <div className="glass rounded-2xl px-5 py-8 text-center">
             <div className="text-4xl mb-3">🎉</div>
-            <p className="text-white font-semibold">You're already premium</p>
+            <p className="text-white font-semibold">You&apos;re already premium</p>
             <p className="text-sm mt-1" style={{ color: '#636366' }}>Access runs until {premiumUntil}</p>
             <button
               onClick={() => router.push('/dashboard')}

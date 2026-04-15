@@ -215,7 +215,7 @@ export default async function DashboardPage() {
                 </p>
               </>
             ) : (
-              <p className="text-sm mt-1" style={{ color: '#636366' }}>Log last night's sleep</p>
+              <p className="text-sm mt-1" style={{ color: '#636366' }}>Log last night&apos;s sleep</p>
             )}
           </div>
           <div className="w-9 h-9 rounded-full flex items-center justify-center"

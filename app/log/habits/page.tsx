@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback, Suspense } from 'react'
-import Link from 'next/link'
+import { useEffect, useRef, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@/lib/supabase'
 import { ProgressRing } from '@/components/ui/progress-ring'

@@ -77,7 +77,7 @@ export default function ScanPage() {
         <p className="text-muted text-xs font-semibold uppercase tracking-widest">Looloop</p>
         <h1 className="text-white text-2xl font-bold mt-1">Scan Journal</h1>
         <p className="text-muted text-sm mt-1">
-          Photo your habit grid — we'll count the ticks for you.
+          Photo your habit grid — we&apos;ll count the ticks for you.
         </p>
       </div>
 

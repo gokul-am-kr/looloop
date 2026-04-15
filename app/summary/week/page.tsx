@@ -41,7 +41,7 @@ function normalizeMins(m: number): number {
 }
 
 function sleepHrs(bedtime: string, wake_time: string): number {
-  let bed  = normalizeMins(timeToMins(bedtime))
+  const bed  = normalizeMins(timeToMins(bedtime))
   let wake = normalizeMins(timeToMins(wake_time))
   if (wake <= bed) wake += 1440
   return (wake - bed) / 60
@@ -49,7 +49,7 @@ function sleepHrs(bedtime: string, wake_time: string): number {
 
 function getBarPos(bedtime: string, wake_time: string): { left: number; width: number } | null {
   if (!bedtime || !wake_time) return null
-  let bed  = normalizeMins(timeToMins(bedtime))
+  const bed  = normalizeMins(timeToMins(bedtime))
   let wake = normalizeMins(timeToMins(wake_time))
   if (wake <= bed) wake += 1440
   const left  = ((bed - TIMELINE_START) / TIMELINE_SPAN) * 100
@@ -280,7 +280,7 @@ function WeekContent() {
                     <div className="px-3 py-3 flex items-center">
                       <span className="text-[11px] font-medium text-white truncate">{name}</span>
                     </div>
-                    {weekDates.map((date, i) => {
+                    {weekDates.map((date) => {
                       const isFuture = date > todayStr
                       const log      = habitByDate[date]
                       const done     = !isFuture && !!log?.[name]

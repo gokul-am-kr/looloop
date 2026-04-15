@@ -59,7 +59,7 @@ function normalizeMins(mins: number): number {
 
 function getBarPosition(bedtime: string, wake_time: string): { left: number; width: number } | null {
   if (!bedtime || !wake_time) return null
-  let bed  = normalizeMins(timeToMins(bedtime))
+  const bed  = normalizeMins(timeToMins(bedtime))
   let wake = normalizeMins(timeToMins(wake_time))
   if (wake <= bed) wake += 1440
 
@@ -70,7 +70,7 @@ function getBarPosition(bedtime: string, wake_time: string): { left: number; wid
 
 function getDurationLabel(bedtime: string, wake_time: string): string {
   if (!bedtime || !wake_time) return ''
-  let bed  = normalizeMins(timeToMins(bedtime))
+  const bed  = normalizeMins(timeToMins(bedtime))
   let wake = normalizeMins(timeToMins(wake_time))
   if (wake <= bed) wake += 1440
   const hrs = (wake - bed) / 60

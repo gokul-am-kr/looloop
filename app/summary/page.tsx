@@ -442,44 +442,6 @@ function sfSegT(cx: number, cy: number, r1: number, r2: number, a1: number, a2: 
   )
 }
 
-function HabitFanThumb({
-  habit, year, month, daysInMonth, todayDay, habitByDate,
-}: {
-  habit: string
-  year: number
-  month: number
-  daysInMonth: number
-  todayDay: number
-  habitByDate: Record<string, Record<string, boolean>>
-}) {
-  const anglePerDay = SF_SPAN / daysInMonth
-  const days        = Array.from({ length: daysInMonth }, (_, i) => i + 1)
-  return (
-    <svg
-      viewBox={`0 0 ${TH_VBW} ${TH_VBH}`}
-      width={TH_VBW * 1.8}
-      height={TH_VBH * 1.8}
-      style={{ flexShrink: 0, overflow: 'visible' }}
-    >
-      {days.map(day => {
-        const a1       = SF_START + (day - 1) * anglePerDay
-        const a2       = SF_START + day * anglePerDay
-        const ds       = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-        const done     = habitByDate[ds]?.[habit] ?? false
-        const isFuture = day > todayDay
-        return (
-          <path
-            key={day}
-            d={sfSegT(TH_CX, TH_CY, TH_R1, TH_R2, a1, a2)}
-            fill={isFuture ? '#111111' : done ? 'var(--char-accent)' : '#2C2C2E'}
-            stroke="#000"
-            strokeWidth="0.4"
-          />
-        )
-      })}
-    </svg>
-  )
-}
 
 function HabitDetailSheet({
   habit, year, month, monthLabel, daysInMonth, todayDay, habitByDate, onClose,
@@ -566,7 +528,7 @@ function HabitDetailSheet({
           width="100%"
           style={{ overflow: 'visible' }}
         >
-          {days.map((day, idx) => {
+          {days.map((day) => {
             const a1       = SF_START + (day - 1) * anglePerDay
             const a2       = SF_START + day * anglePerDay
             const aMid     = SF_START + (day - 0.5) * anglePerDay
