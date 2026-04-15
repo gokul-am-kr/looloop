@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Looloop by Doo Doodle — App Overview</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      --green:   #30D158;
+      --blue:    #5AC8FA;
+      --purple:  #BF5AF2;
+      --orange:  #FF6B35;
+      --bg:      #0A0A0F;
+      --surface: #13131A;
+      --border:  rgba(255,255,255,0.08);
+      --muted:   #52525A;
+      --text:    #F2F2F7;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Cover page ── */
+    .cover {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 60px 40px;
+      position: relative;
+      overflow: hidden;
+      page-break-after: always;
+    }
+    .cover::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 20%, rgba(48,209,88,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 80% 80%, rgba(90,200,250,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 35% at 60% 40%, rgba(191,90,242,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cover-inner { position: relative; z-index: 1; max-width: 560px; }
+    .brand-tag {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 32px;
+    }
+    .cover-logo {
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: -2px;
+      background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+    .cover-sub {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 40px;
+    }
+    .tagline {
+      font-size: 22px;
+      font-weight: 300;
+      color: rgba(255,255,255,0.75);
+      letter-spacing: -0.3px;
+      margin-bottom: 48px;
+      font-style: italic;
+    }
+    .cover-divider {
+      width: 48px;
+      height: 1px;
+      background: var(--green);
+      margin: 0 auto 40px;
+      opacity: 0.6;
+    }
+    .cover-meta {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+    .pill {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--muted);
+      margin: 4px;
+    }
+    .pill.green  { border-color: rgba(48,209,88,0.3);   color: var(--green);  background: rgba(48,209,88,0.07); }
+    .pill.blue   { border-color: rgba(90,200,250,0.3);  color: var(--blue);   background: rgba(90,200,250,0.07); }
+    .pill.purple { border-color: rgba(191,90,242,0.3);  color: var(--purple); background: rgba(191,90,242,0.07); }
+
+    /* ── Page layout ── */
+    .page {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 64px 48px;
+    }
+    @media print {
+      .page { padding: 48px 40px; }
+      .cover { min-height: auto; padding: 80px 40px; }
+      .section { page-break-inside: avoid; }
+    }
+
+    /* ── Section headers ── */
+    .section { margin-bottom: 56px; }
+    .section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .section-desc {
+      font-size: 14px;
+      color: var(--muted);
+      max-width: 560px;
+      margin-bottom: 32px;
+      line-height: 1.7;
+    }
+
+    /* ── Cards ── */
+    .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .card-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+    }
+    .card-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      margin-bottom: 14px;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .card-body {
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+    .card-accent { font-weight: 600; }
+    .card-accent.green  { color: var(--green); }
+    .card-accent.blue   { color: var(--blue); }
+    .card-accent.purple { color: var(--purple); }
+    .card-accent.orange { color: var(--orange); }
+
+    /* ── Character grid ── */
+    .char-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .char-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 24px;
+      display: flex; gap: 16px; align-items: flex-start;
+    }
+    .char-emoji { font-size: 32px; line-height: 1; flex-shrink: 0; margin-top: 2px; }
+    .char-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+    .char-edition { font-size: 10px; color: var(--muted); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 7px; }
+    .char-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+    /* ── Feature list ── */
+    .feature-list { display: flex; flex-direction: column; gap: 12px; }
+    .feature-row {
+      display: flex; gap: 16px; align-items: flex-start;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+    }
+    .feature-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green); flex-shrink: 0; margin-top: 6px;
+    }
+    .feature-dot.blue   { background: var(--blue); }
+    .feature-dot.purple { background: var(--purple); }
+    .feature-text { font-size: 13px; color: #A0A0AA; line-height: 1.6; }
+    .feature-text strong { color: var(--text); font-weight: 600; }
+
+    /* ── Tech table ── */
+    .tech-table { width: 100%; border-collapse: collapse; }
+    .tech-table th {
+      text-align: left;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0 16px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tech-table td {
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #A0A0AA;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      vertical-align: top;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table td:first-child { color: var(--text); font-weight: 500; width: 140px; }
+    .tech-table td:nth-child(2) { color: var(--green); width: 160px; }
+
+    /* ── Phase timeline ── */
+    .timeline { display: flex; flex-direction: column; gap: 0; }
+    .phase {
+      display: flex; gap: 20px; align-items: flex-start;
+      padding-bottom: 28px;
+      position: relative;
+    }
+    .phase:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 15px; top: 32px; bottom: 0;
+      width: 1px;
+      background: var(--border);
+    }
+    .phase-dot {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 11px; font-weight: 700;
+      border: 1px solid var(--border);
+    }
+    .phase-dot.done   { background: rgba(48,209,88,0.15);  border-color: rgba(48,209,88,0.4);  color: var(--green); }
+    .phase-dot.active { background: rgba(90,200,250,0.12); border-color: rgba(90,200,250,0.4); color: var(--blue); }
+    .phase-dot.future { background: rgba(255,255,255,0.04); color: var(--muted); }
+    .phase-content { padding-top: 4px; }
+    .phase-label { font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+    .phase-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    .phase-items { font-size: 12.5px; color: var(--muted); line-height: 1.7; }
+
+    /* ── Pricing ── */
+    .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .price-card {
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid var(--border);
+    }
+    .price-card.free { background: var(--surface); }
+    .price-card.premium {
+      background: linear-gradient(135deg, rgba(48,209,88,0.08) 0%, rgba(48,209,88,0.02) 100%);
+      border-color: rgba(48,209,88,0.2);
+    }
+    .price-tier { font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .price-amount { font-size: 32px; font-weight: 700; letter-spacing: -1px; margin-bottom: 4px; }
+    .price-period { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+    .price-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .price-list li { font-size: 12.5px; color: var(--muted); display: flex; gap: 8px; align-items: flex-start; }
+    .price-list li::before { content: '—'; color: var(--muted); flex-shrink: 0; opacity: 0.4; }
+
+    /* ── Footer ── */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 0 0;
+      margin-top: 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-brand { font-size: 13px; font-weight: 600; color: var(--text); }
+    .footer-meta  { font-size: 11px; color: var(--muted); text-align: right; }
+
+    /* ── Horizontal rule ── */
+    hr { border: none; border-top: 1px solid var(--border); margin: 0 0 48px; }
+
+    /* ── Print overrides ── */
+    @page { size: A4; margin: 0; }
+    @media print {
+      body { background: #0A0A0F !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .cover::before { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════
+     COVER
+══════════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-inner">
+    <p class="brand-tag">Doo Doodle · Product Overview</p>
+
+    <h1 class="cover-logo">Looloop</h1>
+    <p class="cover-sub">by Doo Doodle</p>
+
+    <p class="tagline">"Close the loop."</p>
+
+    <div class="cover-divider"></div>
+
+    <p style="font-size:13px; color:var(--muted); margin-bottom:24px; line-height:1.7;">
+      A phygital companion app for the Looloop 90-day habit &amp; sleep tracker journal.<br/>
+      Where analog meets digital — elegantly.
+    </p>
+
+    <div style="margin-bottom:32px;">
+      <span class="pill green">Habit Tracking</span>
+      <span class="pill blue">Sleep Insights</span>
+      <span class="pill purple">AI Characters</span>
+      <span class="pill">Journal Scan</span>
+      <span class="pill">90-Day Streaks</span>
+    </div>
+
+    <p class="cover-meta">
+      April 2026 &nbsp;·&nbsp; doodoodle.in &nbsp;·&nbsp; app.doodoodle.in
+    </p>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     PAGE 1 — Overview + Core Features
+══════════════════════════════════════════════════════════════ -->
+<div class="page">
+
+  <!-- Overview -->
+  <div class="section">
+    <p class="section-label">What is Looloop</p>
+    <h2 class="section-title">A digital habit companion<br/>for a physical journal</h2>
+    <p class="section-desc">
+      Looloop is the app layer of a premium 90-day habit and sleep tracker journal sold by
+      Doo Doodle. While the journal is the tactile, analog experience — the Looloop app is
+      its living, breathing digital twin. Together they form a phygital loop: the journal
+      grounds you in the present, the app reflects your journey over time.
+    </p>
+    <p class="section-desc" style="margin-top:-16px;">
+      No other Indian journal brand has a companion app. This is Looloop's core competitive
+      moat — built to deepen engagement, reduce churn, and add a premium digital layer that
+      justifies a higher price point at scale.
+    </p>
+  </div>
+
+  <hr/>
+
+  <!-- Core features -->
+  <div class="section">
+    <p class="section-label">Core Features</p>
+    <h2 class="section-title">Everything in one loop</h2>
+    <p class="section-desc">
+      Built for the full 90-day journey — from day one setup to the completion certificate.
+    </p>
+
+    <div class="card-grid">
+
+      <div class="card">
+        <div class="card-icon" style="background:rgba(48,209,88,0.1);">🎯</div>
+        <p class="card-title">Daily Habit Log</p>
+        <p class="card-body">
+          Log up to <span class="card-accent green">10 custom habits</span> per day —
+          fully blank, named by the user. No presets, no judgement.
+          Tap to mark done. The app tracks streaks, perfect days, and monthly completion
+          automatically. Every logged day feeds the radial fan chart.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon" style="background:rgba(90,200,250,0.1);">🌙</div>
+        <p class="card-title">Sleep Log</p>
+        <p class="card-body">
+          Log bedtime, wake time, and a <span class="card-accent blue">1–5 quality rating</span>
+          each day. The app calculates a 0–100 Sleep Score across three dimensions —
+          duration (40 pts), quality (40 pts), and consistency (20 pts) — giving users
+          weekly insight into their rest patterns.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon" style="background:rgba(191,90,242,0.1);">🌈</div>
+        <p class="card-title">Mood Tracker</p>
+        <p class="card-body">
+          A radial sunburst mood tracker with the character at its centre.
+          <span class="card-accent purple">30 daily segments</span>, colour-coded by
+          mood rating. Visualises emotional patterns across the full month in a single glance.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon" style="background:rgba(255,107,53,0.1);">📊</div>
+        <p class="card-title">Monthly Summary</p>
+        <p class="card-body">
+          The signature <span class="card-accent orange">radial fan chart</span> shows the
+          entire month at a glance — every day × every habit rendered as a beveled 3-D tile
+          with ambient glow. Tabs switch between Habits, Sleep, and Mood views.
+          Tap any tile to log or edit that day.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon" style="background:rgba(48,209,88,0.1);">📸</div>
+        <p class="card-title">Journal Scan (AI Vision)</p>
+        <p class="card-body">
+          Point your camera at any page of the physical journal.
+          Claude AI reads the habit grid and <span class="card-accent green">auto-counts ticks</span>.
+          Images are compressed client-side before sending. Free users get 1 scan/week;
+          premium gets up to 3/day.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon" style="background:rgba(90,200,250,0.1);">🤖</div>
+        <p class="card-title">AI Character Dialogue</p>
+        <p class="card-body">
+          Each journal edition ships with an AI character who speaks in-character
+          based on the user's current streak. Powered by
+          <span class="card-accent blue">Claude Haiku</span> — responses are one line,
+          never preachy, always on-brand. Free users: 10 messages/day.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+
+<!-- ════════════════════════════════════════════════════════════
+     PAGE 2 — Characters + Dashboard
+══════════════════════════════════════════════════════════════ -->
+<div class="page">
+
+  <div class="section">
+    <p class="section-label">Character System</p>
+    <h2 class="section-title">Four characters.<br/>One for every kind of user.</h2>
+    <p class="section-desc">
+      Users take a 7-question edition quiz on first launch. Their answers map to one of four
+      characters — each with a distinct personality, voice style, and colour palette that
+      themes the entire app experience. Characters respond to the user's streak count via
+      Claude AI.
+    </p>
+
+    <div class="char-grid">
+      <div class="char-card">
+        <div class="char-emoji">🐱</div>
+        <div>
+          <p class="char-name">Mochi the Cat</p>
+          <p class="char-edition">Edition 01 · Habits · Terracotta</p>
+          <p class="char-desc">Warm, curious, quietly encouraging. Short, gentle one-line nudges. Speaks to daily habit streaks.</p>
+        </div>
+      </div>
+      <div class="char-card">
+        <div class="char-emoji">🌵</div>
+        <div>
+          <p class="char-name">Pico the Cactus</p>
+          <p class="char-edition">Edition 01 Alt · Habits · Green</p>
+          <p class="char-desc">Dry, calm, deadpan — never admits he cares, but always shows up. Terse and consistent.</p>
+        </div>
+      </div>
+      <div class="char-card">
+        <div class="char-emoji">🪼</div>
+        <div>
+          <p class="char-name">Jelli the Jellyfish</p>
+          <p class="char-edition">Edition 02 · Sleep · Blue · Month 6</p>
+          <p class="char-desc">Dreamy, poetic, gentle. Speaks about sleep and rest. Never judges a missed night.</p>
+        </div>
+      </div>
+      <div class="char-card">
+        <div class="char-emoji">🐙</div>
+        <div>
+          <p class="char-name">Inko the Octopus</p>
+          <p class="char-edition">Study Edition · Streaks · Purple</p>
+          <p class="char-desc">Chatty, curious, science-obsessed. Enthusiastic about every fact and every logged day.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- Dashboard -->
+  <div class="section">
+    <p class="section-label">Today Dashboard</p>
+    <h2 class="section-title">Your day, at a glance</h2>
+    <p class="section-desc">
+      The home screen shows today's progress through Apple Watch-style
+      concentric activity rings — one for habits, one for sleep.
+      Below the rings: metric cards, a 7-day week strip, and the AI character chat bubble.
+    </p>
+
+    <div class="feature-list">
+      <div class="feature-row">
+        <div class="feature-dot"></div>
+        <p class="feature-text">
+          <strong>Activity Rings</strong> — outer ring tracks habit completion (done/total),
+          inner ring tracks sleep vs. 8-hour goal. Animated, colour-coded by character palette.
+        </p>
+      </div>
+      <div class="feature-row">
+        <div class="feature-dot"></div>
+        <p class="feature-text">
+          <strong>Week Strip</strong> — 7-day scrollable strip at the top showing each day's
+          habit and sleep rings in miniature. Tap any day to jump to that log.
+        </p>
+      </div>
+      <div class="feature-row">
+        <div class="feature-dot blue"></div>
+        <p class="feature-text">
+          <strong>Streak Counter</strong> — live habit streak displayed with a flame icon.
+          Streak is active if the user logged habits today or yesterday.
+        </p>
+      </div>
+      <div class="feature-row">
+        <div class="feature-dot blue"></div>
+        <p class="feature-text">
+          <strong>Character Chat</strong> — the AI character responds in-context to the user's
+          streak. One-tap to open, one-line responses, streak-aware, free limit of 10/day.
+        </p>
+      </div>
+      <div class="feature-row">
+        <div class="feature-dot purple"></div>
+        <p class="feature-text">
+          <strong>Premium / Certificate links</strong> — quick access to the Upgrade page or,
+          for premium users, confirmation badge. Completion certificate link always visible.
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+
+<!-- ════════════════════════════════════════════════════════════
+     PAGE 3 — Visualisations + Premium
+══════════════════════════════════════════════════════════════ -->
+<div class="page">
+
+  <div class="section">
+    <p class="section-label">Signature Visualisations</p>
+    <h2 class="section-title">Data made beautiful</h2>
+    <p class="section-desc">
+      Every chart in Looloop is custom-built in SVG — no third-party chart libraries.
+      The visual language is inspired by the journal's physical grid layout,
+      brought to life with glow, gradients, and depth.
+    </p>
+
+    <div class="card-grid-3">
+
+      <div class="card">
+        <div class="card-icon" style="background:rgba(48,209,88,0.1); font-size:22px;">🌀</div>
+        <p class="card-title">Radial Fan Chart</p>
+        <p class="card-body">
+          Month × habit grid rendered as a leftward fan. Each tile is a
+          beveled 3-D chip with ambient particle glow. Bullet-journal guide lines
+          label each habit ring. Tap any tile to edit that day.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon" style="background:rgba(90,200,250,0.1); font-size:22px;">🌊</div>
+        <p class="card-title">Sleep Garden</p>
+        <p class="card-body">
+          A stacked terracotta-pot visual mirroring the physical journal tracker.
+          Sleep duration fills the pot layers. Mirrors the analog experience digitally.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon" style="background:rgba(191,90,242,0.1); font-size:22px;">☀️</div>
+        <p class="card-title">Mood Sunburst</p>
+        <p class="card-body">
+          Radial 30-segment mood ring with the character emoji at centre.
+          Colour intensity scales with mood rating. Full month in one circle.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon" style="background:rgba(255,107,53,0.1); font-size:22px;">💤</div>
+        <p class="card-title">Sleep Score Card</p>
+        <p class="card-body">
+          Weekly 0–100 score across duration (40pt), quality (40pt),
+          consistency (20pt). Shareable as an image card. Premium feature.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon" style="background:rgba(48,209,88,0.1); font-size:22px;">🏆</div>
+        <p class="card-title">90-Day Certificate</p>
+        <p class="card-body">
+          Completion certificate generated at day 90. LinkedIn-shareable.
+          Branded with the user's character and final stats. Premium feature.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon" style="background:rgba(90,200,250,0.1); font-size:22px;">📅</div>
+        <p class="card-title">Weekly View</p>
+        <p class="card-body">
+          7-day grid for habits + sleep timeline bar chart.
+          Compact, navigable by week. Habit completion pills + sleep stat pills.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <hr/>
+
+  <!-- Pricing -->
+  <div class="section">
+    <p class="section-label">Pricing &amp; Access</p>
+    <h2 class="section-title">Free to start.<br/>Premium for the full loop.</h2>
+    <p class="section-desc">
+      The app is free for all users. Premium unlocks via QR code inside the physical journal
+      (3 months free) or via Razorpay subscription.
+    </p>
+
+    <div class="pricing-grid">
+      <div class="price-card free">
+        <p class="price-tier">Free</p>
+        <p class="price-amount" style="color:var(--text);">₹0</p>
+        <p class="price-period">forever</p>
+        <ul class="price-list">
+          <li>Edition quiz + character assignment</li>
+          <li>Daily habit log (up to 10 habits)</li>
+          <li>Daily sleep log</li>
+          <li>Daily mood log</li>
+          <li>Radial fan + sleep charts</li>
+          <li>1 journal scan per week</li>
+          <li>10 AI character messages per day</li>
+          <li>7-day week view</li>
+        </ul>
+      </div>
+      <div class="price-card premium">
+        <p class="price-tier">Premium</p>
+        <p class="price-amount" style="color:var(--green);">₹99</p>
+        <p class="price-period">per month · or via journal QR (3 months free)</p>
+        <ul class="price-list">
+          <li>Everything in Free</li>
+          <li>Up to 3 journal scans per day</li>
+          <li>Full AI character dialogue</li>
+          <li>Advanced sleep score card</li>
+          <li>Weekly sleep insights</li>
+          <li>90-day completion certificate</li>
+          <li>Sleep Garden visualisation</li>
+          <li>Priority support</li>
+        </ul>
+      </div>
+    </div>
+
+    <p style="font-size:11.5px; color:var(--muted); margin-top:16px; line-height:1.6;">
+      <strong style="color:var(--text);">Journal pricing:</strong>
+      ₹349 now &nbsp;·&nbsp; ₹449 after mobile app launch (Month 6) &nbsp;·&nbsp;
+      QR code inside every journal activates 90 days of premium — single-use, edition-tied.
+    </p>
+  </div>
+
+</div><!-- /page -->
+
+
+<!-- ════════════════════════════════════════════════════════════
+     PAGE 4 — Tech + Roadmap
+══════════════════════════════════════════════════════════════ -->
+<div class="page">
+
+  <div class="section">
+    <p class="section-label">Tech Stack</p>
+    <h2 class="section-title">Built lean.<br/>Designed to scale.</h2>
+    <p class="section-desc">
+      The entire stack runs on free tiers in Phase 1 — with clear upgrade paths as usage grows.
+      AI costs are kept ultra-low by using Claude Haiku exclusively and enforcing per-user
+      daily limits in the database.
+    </p>
+
+    <table class="tech-table">
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>Technology</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Web frontend</td>
+          <td>Next.js 14 (App Router)</td>
+          <td>Hosted on Vercel free tier. TypeScript throughout.</td>
+        </tr>
+        <tr>
+          <td>Mobile (Month 6)</td>
+          <td>React Native + Expo</td>
+          <td>iOS + Android from one codebase. Converts from web.</td>
+        </tr>
+        <tr>
+          <td>Database + Auth</td>
+          <td>Supabase</td>
+          <td>Magic link auth. Row-level security on every table. Free tier.</td>
+        </tr>
+        <tr>
+          <td>AI Dialogue</td>
+          <td>Claude Haiku 4.5</td>
+          <td>Character responses. ~₹0.02/message. Max 10/user/day (free).</td>
+        </tr>
+        <tr>
+          <td>AI Vision</td>
+          <td>Claude Haiku 4.5</td>
+          <td>Journal grid scan. ~₹0.10/scan. Max 3/user/day.</td>
+        </tr>
+        <tr>
+          <td>Payments</td>
+          <td>Razorpay</td>
+          <td>₹99/month subscription. 1.9% per transaction. India-first.</td>
+        </tr>
+        <tr>
+          <td>Notifications</td>
+          <td>Expo Notifications</td>
+          <td>9pm daily, character-voiced. Free.</td>
+        </tr>
+        <tr>
+          <td>Image sharing</td>
+          <td>html2canvas / Satori</td>
+          <td>Sleep score cards, completion certificates.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr/>
+
+  <!-- Roadmap -->
+  <div class="section">
+    <p class="section-label">Build Roadmap</p>
+    <h2 class="section-title">Four phases.<br/>Month 2 → Month 6.</h2>
+
+    <div class="timeline">
+
+      <div class="phase">
+        <div class="phase-dot done">1</div>
+        <div class="phase-content">
+          <p class="phase-label">Phase 1 · Month 2 · Complete</p>
+          <p class="phase-title">Web App Foundation</p>
+          <p class="phase-items">
+            Magic link auth · Edition quiz · Daily habit log · Daily sleep log ·
+            Mood log · Dashboard with activity rings · Monthly radial chart ·
+            AI character dialogue · Journal scan · QR code activation ·
+            Razorpay webhook
+          </p>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-dot active">2</div>
+        <div class="phase-content">
+          <p class="phase-label">Phase 2 · Month 3–4 · In Progress</p>
+          <p class="phase-title">AI Features + Notifications</p>
+          <p class="phase-items">
+            Push notifications via Expo (9pm daily, character-voiced) ·
+            Advanced sleep insights · Per-habit breakdown charts ·
+            Weekly summary refinements
+          </p>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-dot future">3</div>
+        <div class="phase-content">
+          <p class="phase-label">Phase 3 · Month 4–5 · Upcoming</p>
+          <p class="phase-title">Virality Features</p>
+          <p class="phase-items">
+            Weekly sleep score card (shareable image) ·
+            90-day completion certificate (LinkedIn-shareable) ·
+            Sleep Garden visualisation · Social sharing hooks
+          </p>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-dot future">4</div>
+        <div class="phase-content">
+          <p class="phase-label">Phase 4 · Month 6 · Upcoming</p>
+          <p class="phase-title">Mobile App + Edition 02</p>
+          <p class="phase-items">
+            React Native / Expo mobile app (iOS + Android) ·
+            App Store + Play Store submission ·
+            Google &amp; Apple Sign-In ·
+            Razorpay subscription UI ·
+            Jelli Edition 02 content (sleep-focused) ·
+            Journal price increase to ₹449
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div>
+      <p class="footer-brand">Looloop by Doo Doodle</p>
+      <p style="font-size:11px; color:var(--muted); margin-top:3px;">The journal that closes the loop.</p>
+    </div>
+    <div class="footer-meta">
+      <p>doodoodle.in &nbsp;·&nbsp; app.doodoodle.in</p>
+      <p style="margin-top:3px;">April 2026 &nbsp;·&nbsp; Confidential</p>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+</body>
+</html>

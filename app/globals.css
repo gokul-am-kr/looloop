@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #050505;
+  --foreground: #ffffff;
+
+  /* Character palette — defaults to Mochi (terracotta).
+     CharacterTheme component overrides these after auth. */
+  --char-accent:   #FF6B35;
+  --char-accent10: rgba(255,107,53,0.10);
+  --char-accent22: rgba(255,107,53,0.22);
+  --char-orb1:     rgba(255,107,53,0.13);
+  --char-orb2:     rgba(90,200,250,0.11);
+  --char-orb3:     rgba(191,90,242,0.06);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: var(--foreground);
+  /*
+    Ambient glow orbs baked directly into the background so they're always
+    visible behind glass cards. background-attachment: fixed keeps them
+    stationary as content scrolls — the blur then refracts them.
+  */
+  background-color: #050505;
+  background-image:
+    radial-gradient(ellipse 65% 50% at 8% 8%,  var(--char-orb1) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 55% at 92% 90%, var(--char-orb2) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 35% at 60% 38%, var(--char-orb3) 0%, transparent 68%);
+  background-attachment: fixed;
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
+}
+
+/* Hide scrollbars globally */
+::-webkit-scrollbar { display: none; }
+* { scrollbar-width: none; -ms-overflow-style: none; }
+
+@layer utilities {
+  /* Primary glass card — cards, panels, option rows */
+  .glass {
+    background: rgba(18, 18, 22, 0.52);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+      0 4px 24px rgba(0, 0, 0, 0.40),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  /* Elevated glass — inputs, secondary surfaces, message bubbles */
+  .glass-elevated {
+    background: rgba(36, 36, 44, 0.62);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
+  }
+
+  /* Strong glass — bottom sheet, nav bar, overlays */
+  .glass-strong {
+    background: rgba(5, 5, 7, 0.78);
+    backdrop-filter: blur(48px) saturate(200%);
+    -webkit-backdrop-filter: blur(48px) saturate(200%);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
