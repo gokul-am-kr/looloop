@@ -21,7 +21,6 @@ function h12ToH24(h12: number, isPM: boolean): number {
 }
 
 const MINUTE_STEP = 15
-const _MINUTES = Array.from({ length: 60 / MINUTE_STEP }, (_, i) => i * MINUTE_STEP)
 
 // Round to nearest 5 minutes
 function roundMin(m: number): number {

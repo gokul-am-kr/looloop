@@ -420,27 +420,6 @@ function computeHabitStreak(
   return best
 }
 
-// Thumbnail constants — smaller ring for the row preview
-const TH_R1   = 10
-const TH_R2   = 20
-const TH_CX   = TH_R2 + 2
-const TH_CY   = Math.ceil(TH_R2 * Math.sin((SF_START * Math.PI) / 180)) + 2
-const TH_VBW  = TH_CX + 4
-const TH_VBH  = TH_CY + TH_R2 + 2
-
-function sfSegT(cx: number, cy: number, r1: number, r2: number, a1: number, a2: number): string {
-  const [ax, ay]   = sfXY(cx, cy, r1, a1)
-  const [bx, by]   = sfXY(cx, cy, r1, a2)
-  const [ccx, ccy] = sfXY(cx, cy, r2, a2)
-  const [dx, dy]   = sfXY(cx, cy, r2, a1)
-  const large = (a2 - a1 > 180) ? 1 : 0
-  return (
-    `M ${ax.toFixed(2)} ${ay.toFixed(2)} ` +
-    `A ${r1} ${r1} 0 ${large} 0 ${bx.toFixed(2)} ${by.toFixed(2)} ` +
-    `L ${ccx.toFixed(2)} ${ccy.toFixed(2)} ` +
-    `A ${r2} ${r2} 0 ${large} 1 ${dx.toFixed(2)} ${dy.toFixed(2)} Z`
-  )
-}
 
 
 function HabitDetailSheet({
