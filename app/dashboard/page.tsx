@@ -99,6 +99,17 @@ export default async function DashboardPage() {
     WebkitBackdropFilter: 'blur(24px)',
   } as const
 
+  const QUICK_LINK_STYLE = {
+    background: 'linear-gradient(145deg, rgba(255,255,255,0.11), rgba(255,255,255,0.04))',
+    borderTop: '0.5px solid rgba(255,255,255,0.24)',
+    borderLeft: '0.5px solid rgba(255,255,255,0.16)',
+    borderRight: '0.5px solid rgba(255,255,255,0.04)',
+    borderBottom: '0.5px solid rgba(255,255,255,0.04)',
+    boxShadow: '0 8px 28px rgba(0,0,0,0.50), 0 2px 8px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.12)',
+    backdropFilter: 'blur(24px)',
+    WebkitBackdropFilter: 'blur(24px)',
+  } as const
+
   const ICON_CIRCLE = {
     background: 'linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.05))',
     border: '0.5px solid rgba(255,255,255,0.20)',
@@ -133,26 +144,29 @@ export default async function DashboardPage() {
 
         {/* Big concentric rings */}
         <div className="flex flex-col items-center mt-10">
-          <div style={{ position: 'relative', width: 210, height: 210 }}>
+          <div style={{ position: 'relative', width: '85%', maxWidth: 320, aspectRatio: '1', margin: '0 auto', filter: 'drop-shadow(0 20px 60px rgba(0,0,0,0.70)) drop-shadow(0 0 30px hsla(var(--hue),60%,60%,0.15))' }}>
             {/* Circular glass plate behind rings */}
             <div style={{
               position: 'absolute',
               inset: 0,
               borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(255,255,255,0.07), rgba(255,255,255,0.02))',
-              border: '0.5px solid rgba(255,255,255,0.12)',
-              boxShadow: '0 24px 80px rgba(0,0,0,0.70), 0 8px 32px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.10)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
+              background: 'radial-gradient(circle at 40% 35%, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.05) 40%, rgba(255,255,255,0.01) 100%)',
+              borderTop: '0.5px solid rgba(255,255,255,0.22)',
+              borderLeft: '0.5px solid rgba(255,255,255,0.14)',
+              borderRight: '0.5px solid rgba(255,255,255,0.04)',
+              borderBottom: '0.5px solid rgba(255,255,255,0.04)',
+              boxShadow: '0 32px 80px rgba(0,0,0,0.80), 0 12px 40px rgba(0,0,0,0.60), 0 4px 12px rgba(0,0,0,0.40), inset 0 2px 0 rgba(255,255,255,0.12), inset 0 -2px 0 rgba(0,0,0,0.30), 0 0 60px hsla(var(--hue),60%,60%,0.12)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
             }} />
             <ActivityRings
               size={210}
               strokeWidth={18}
               gap={10}
-              centerBg="var(--bg)"
+              centerBg="hsl(var(--hue),45%,5%)"
               rings={[
-                { progress: habitProgress, color: 'var(--ring-done-1)', trackColor: 'rgba(255,255,255,0.06)' },
-                { progress: sleepProgress, color: 'var(--ring-done-4)', trackColor: 'rgba(255,255,255,0.06)' },
+                { progress: habitProgress, color: 'var(--ring-done-1)', trackColor: 'rgba(255,255,255,0.05)', glowBlur: 24 },
+                { progress: sleepProgress, color: 'var(--ring-done-4)', trackColor: 'rgba(255,255,255,0.05)', glowBlur: 18 },
               ]}
             >
               <div className="text-center">
@@ -228,19 +242,19 @@ export default async function DashboardPage() {
         {/* Quick links */}
         <div className="px-5 mt-2.5 flex gap-2">
           <Link href="/certificate"
-            className="flex-1 rounded-2xl py-3 text-center text-xs font-medium"
-            style={{ ...CARD_STYLE, color: 'rgba(255,255,255,0.45)' }}>
+            className="flex-1 rounded-2xl text-center text-sm font-medium"
+            style={{ ...QUICK_LINK_STYLE, color: 'rgba(255,255,255,0.75)', padding: '14px 18px' }}>
             Certificate
           </Link>
           {isPremium ? (
-            <div className="flex-1 rounded-2xl py-3 text-center text-xs font-medium"
-              style={{ ...CARD_STYLE, color: 'var(--accent)' }}>
+            <div className="flex-1 rounded-2xl text-center text-sm font-medium"
+              style={{ ...QUICK_LINK_STYLE, color: 'var(--accent)', padding: '14px 18px' }}>
               Premium ✓
             </div>
           ) : (
             <Link href="/upgrade"
-              className="flex-1 rounded-2xl py-3 text-center text-xs font-medium"
-              style={{ ...CARD_STYLE, color: 'var(--accent)' }}>
+              className="flex-1 rounded-2xl text-center text-sm font-medium"
+              style={{ ...QUICK_LINK_STYLE, color: 'var(--accent)', padding: '14px 18px' }}>
               Go Premium
             </Link>
           )}

@@ -2,6 +2,7 @@ interface RingSpec {
   progress: number   // 0–1 normal; > 1 triggers overlap/coil effect
   color: string
   trackColor?: string
+  glowBlur?: number  // enables soft glow on filled arc (SVG units)
 }
 
 interface ActivityRingsProps {
@@ -29,8 +30,8 @@ export function ActivityRings({
   const centerFillR  = Math.max(0, innerRingR - strokeWidth / 2 - 3)
 
   return (
-    <div className="relative" style={{ width: size, height: size }}>
-      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+    <div className="relative" style={{ width: '100%', height: '100%' }}>
+      <svg width="100%" height="100%" viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)' }}>
         <defs>
           {rings.map((ring, i) => (
             <linearGradient key={i} id={`ringGrad${i}`} x1="1" y1="0" x2="0" y2="1">
@@ -39,11 +40,28 @@ export function ActivityRings({
               <stop offset="100%" stopColor={ring.color} stopOpacity="1"    />
             </linearGradient>
           ))}
+          {rings.map((ring, i) => ring.glowBlur !== undefined && (
+            <filter key={i} id={`ringGlow${i}`} x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation={ring.glowBlur / 4} in="SourceGraphic" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          ))}
         </defs>
 
-        {/* Optional center fill circle */}
+        {/* Center fill with depth layers */}
         {centerBg && (
-          <circle cx={center} cy={center} r={centerFillR} fill={centerBg} />
+          <>
+            <circle cx={center} cy={center} r={centerFillR} fill={centerBg} />
+            {/* Inner shadow — dark ring near edge creates recessed look */}
+            <circle cx={center} cy={center} r={centerFillR - 4} fill="none"
+              stroke="rgba(0,0,0,0.55)" strokeWidth={8} />
+            {/* Rim highlight */}
+            <circle cx={center} cy={center} r={centerFillR} fill="none"
+              stroke="rgba(255,255,255,0.07)" strokeWidth={1} />
+          </>
         )}
 
         {rings.map((ring, i) => {
@@ -56,15 +74,18 @@ export function ActivityRings({
             <g key={i}>
               {/* 1 — Track */}
               <circle cx={center} cy={center} r={r} fill="none"
-                stroke={ring.trackColor ?? 'rgba(255,255,255,0.06)'} strokeWidth={strokeWidth} />
-
-              {/* 2 — Main arc */}
+                stroke={ring.trackColor ?? 'rgba(255,255,255,0.05)'} strokeWidth={strokeWidth} />
+              {/* 2 — Inner groove on track (recessed look) */}
+              <circle cx={center} cy={center} r={r} fill="none"
+                stroke="rgba(0,0,0,0.28)" strokeWidth={2} />
+              {/* 3 — Filled arc with optional glow */}
               <circle cx={center} cy={center} r={r} fill="none"
                 stroke={`url(#ringGrad${i})`} strokeWidth={strokeWidth}
                 strokeLinecap="round"
                 strokeDasharray={circumference}
                 strokeDashoffset={offset}
                 style={{ transition: 'stroke-dashoffset 0.4s ease' }}
+                filter={ring.glowBlur !== undefined ? `url(#ringGlow${i})` : undefined}
               />
             </g>
           )

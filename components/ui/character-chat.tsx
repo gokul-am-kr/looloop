@@ -100,12 +100,6 @@ export function CharacterChat({ edition, charName, streak }: Props) {
           aria-label={`Chat with ${charName}`}
         >
           <span className="text-2xl leading-none">{emoji}</span>
-          {!greeted && (
-            <span
-              className="absolute top-0 right-0 w-3 h-3 rounded-full border-2"
-              style={{ background: 'var(--char-accent)', borderColor: '#050505' }}
-            />
-          )}
         </button>
       )}
 

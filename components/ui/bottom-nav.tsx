@@ -88,17 +88,17 @@ export function BottomNav() {
 
   return (
     <div
-      className="z-[100] flex justify-between items-center gap-1"
+      className="z-[100] flex items-center"
       style={{
         position: 'fixed',
-        bottom: 16,
+        bottom: 20,
         left: '50%',
         transform: 'translateX(-50%)',
-        width: 'auto',
-        minWidth: 320,
-        maxWidth: '90%',
-        padding: '10px 20px',
-        borderRadius: 24,
+        width: 'fit-content',
+        minWidth: 300,
+        padding: '10px 16px',
+        borderRadius: 28,
+        gap: 2,
         background: 'linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%)',
         border: '0.5px solid rgba(255,255,255,0.15)',
         boxShadow: '0 8px 32px rgba(0,0,0,0.50), 0 2px 8px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.12)',
@@ -119,20 +119,19 @@ export function BottomNav() {
                   borderBottom: '0.5px solid rgba(255,255,255,0.05)',
                   boxShadow: '0 4px 16px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.15)',
                   borderRadius: 16,
-                  padding: '8px 20px',
-                  color: '#ffffff',
+                  padding: '8px 16px',
                   opacity: 1,
                 }}>
                 {icon(true, '#ffffff')}
-                <span className="text-[10px] font-medium" style={{ color: '#ffffff' }}>{label}</span>
+                <span className="text-[10px] font-medium" style={{ color: 'var(--accent)' }}>{label}</span>
               </Link>
             )
           }
           return (
             <Link key={href} href={href}
-              className="flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-opacity active:opacity-70"
-              style={{ color: 'rgba(255,255,255,0.55)', opacity: 0.45 }}>
-              {icon(false, 'rgba(255,255,255,0.55)')}
+              className="flex flex-col items-center gap-1 rounded-2xl transition-opacity active:opacity-70"
+              style={{ padding: '8px 10px', color: 'rgba(255,255,255,0.30)' }}>
+              {icon(false, 'rgba(255,255,255,0.30)')}
               <span className="text-[10px] font-medium">{label}</span>
             </Link>
           )
