@@ -242,9 +242,30 @@ NEXT_PUBLIC_APP_URL=         # e.g. https://app.doodoodle.in
 The app uses a unified premium dark glassmorphism theme. Every new screen must follow these rules.
 
 ### Background
-- Base: `#050505` (set on `<body>` in `globals.css`)
-- Ambient orbs from CSS variables `--char-orb1/2/3` provide a subtle glow per character
-- `background-attachment: fixed` keeps orbs stationary as content scrolls
+- Base: `#07051a` (deep dark purple — set per-page, not globally)
+- Three ambient orbs positioned absolutely behind all content (z-index 0):
+  - Orb 1: `#7F77DD` opacity 0.65, 300×300px, blur(90px), top-left
+  - Orb 2: `#534AB7` opacity 0.50, 240×240px, blur(75px), mid-right
+  - Orb 3: `#AFA9EC` opacity 0.30, 240×240px, blur(100px), bottom-left
+- Content sits at `position: relative; z-index: 1` above orbs
+- Outer page container uses `overflow: clip` (not `hidden`) to contain orbs without creating a scroll context
+
+### Deep glass card style
+Used for all stat cards, habit list cards, and surface panels:
+```tsx
+{
+  background: 'linear-gradient(145deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.04) 60%, rgba(255,255,255,0.02) 100%)',
+  borderTop: '0.5px solid rgba(255,255,255,0.28)',
+  borderLeft: '0.5px solid rgba(255,255,255,0.18)',
+  borderRight: '0.5px solid rgba(255,255,255,0.04)',
+  borderBottom: '0.5px solid rgba(255,255,255,0.04)',
+  boxShadow: '0 16px 48px rgba(0,0,0,0.65), 0 4px 12px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.15)',
+  backdropFilter: 'blur(28px)',
+  WebkitBackdropFilter: 'blur(28px)',
+  borderRadius: 20,
+}
+```
+The asymmetric border (bright top-left, near-invisible bottom-right) creates the glass depth effect.
 
 ### Glass surface classes (defined in `app/globals.css`)
 | Class | Use for | Key properties |
@@ -253,30 +274,38 @@ The app uses a unified premium dark glassmorphism theme. Every new screen must f
 | `.glass-elevated` | Inputs, message bubbles, secondary surfaces | `rgba(36,36,44,0.62)` · blur(16px) |
 | `.glass-strong` | Bottom sheets, overlays | `rgba(5,5,7,0.78)` · blur(48px) |
 
-For inline glass cards (stat cards, habit cards) use:
-```
-background: rgba(255,255,255,0.04)
-backdropFilter: blur(16px)
-border: 1px solid rgba(255,255,255,0.07)
-boxShadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 24px rgba(0,0,0,0.3)
-```
-
 ### Text hierarchy
 | Token | Value | Use |
 |---|---|---|
 | White | `#ffffff` | Headlines, primary values |
 | `.text-muted` | `#7A7A86` | Labels, subtitles, secondary info |
 | `.text-dim` | `#4E4E5A` | Disabled states, placeholder hints |
-| Accent | `var(--char-accent)` | Active values, highlights |
+| Stat label | `rgba(175,169,236,0.90)` | Uppercase stat labels inside cards |
+| Stat sub | `rgba(175,169,236,0.45)` | Sub-labels inside cards |
 
 **Never use** `#636366`, `#52525A`, `#3A3A44` — these are invisible on the dark background.
 
 ### Interactive elements
-- **Tab bar (Habits/Sleep/Mood)**: glass container `rgba(255,255,255,0.05)` blur(12px); active tab gets `linear-gradient(135deg, color1, color2)` + outer glow `box-shadow: 0 0 18px colorXX`
-- **Bottom nav**: glass pill `rgba(255,255,255,0.06)` blur(24px); active item gets tinted background `color18` + glow `color22`
-- **Stat cards**: inline glass with diagonal color wash `color22 → transparent`, corner bloom, specular top edge, value `textShadow: 0 0 18px color66`
-- **Buttons (primary)**: `var(--char-accent)` fill, black text, accent glow shadow
-- **Buttons (secondary)**: `.glass-elevated` with muted text
+
+**Tab pills (Habits/Sleep/Mood and equivalent toggles):**
+- Container: `rgba(255,255,255,0.05)` background, no border
+- Active tab: `linear-gradient(135deg, rgba(255,255,255,0.16), rgba(255,255,255,0.06))` with asymmetric borders (`borderTop: 0.5px solid rgba(255,255,255,0.32)`, sides/bottom fading to 0.05), `boxShadow: 0 4px 20px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.15)`, `color: #ffffff`
+- Inactive tab: transparent background, `border: 0.5px solid rgba(255,255,255,0.08)`, `color: rgba(255,255,255,0.28)`
+
+**Bottom nav (`components/ui/bottom-nav.tsx`):**
+- Floating frosted tray: `position: fixed; bottom: 0; left: 0; right: 0` with outer wrapper `padding: 0 16px 16px`
+- Inner pill: `border-radius: 24px` (all corners), `padding: 10px 20px 24px`, `background: linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04))`, `border: 0.5px solid rgba(255,255,255,0.14)`, `boxShadow: 0 -4px 24px rgba(0,0,0,0.40), 0 8px 32px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.15)`, `backdropFilter: blur(28px)`
+- Active item: glass pill `border-radius: 16px`, `padding: 8px 20px`, same asymmetric glass border/gradient as tab pills, `color: #ffffff`, `opacity: 1`
+- Inactive items: `color: rgba(255,255,255,0.55)`, `opacity: 0.45`
+- No per-tab accent colors — everything is white-on-glass
+
+**Stat cards:**
+- Use deep glass card style above
+- Label: `rgba(175,169,236,0.90)` uppercase 10px tracking-wide
+- Value: `#ffffff` 26px font-medium, `textShadow: 0 2px 12px rgba(175,169,236,0.30)`
+
+**Buttons (primary):** `var(--char-accent)` fill, black text, accent glow shadow
+**Buttons (secondary):** `.glass-elevated` with muted text
 
 ### Accent glow pattern
 When showing active/highlighted values, always pair the color with a matching glow:
@@ -291,13 +320,17 @@ style={{ background: accent, boxShadow: `0 0 6px ${accent}` }}
 boxShadow: `... 0 0 20px ${color}18`
 ```
 
-### Radial chart (RadialHabitChart)
-- Fan: 100° → 260° (leftward)
-- Done tiles: accent color + `rhc-neon` drop-shadow filter
-- Labels: curved `<textPath>` along ring mid-radius from FAN_START; glass chip background with rounded far end
-- Day separators: thin `#000` radial lines at every day boundary
-- Day number labels: outside outermost ring at `outerR + RING_H + 6`
-- Character centre: glowing circle with accent stroke
+### RadialHabitChart (`components/ui/radial-habit-chart.tsx`)
+- **Geometry**: near-full circle, 0.18 rad gap at top. `FAN_START = 90 + GAP_DEG/2 ≈ 95.16°`, `FAN_SPAN ≈ 349.69°`
+- **Ring constants**: `RING_H = 13`, `RING_GAP = 1`, `R_START = 40`, `DAY_INSET = 0.004 * (180/π)` (0.008 rad total gap per segment boundary)
+- **Done colors** (innermost → outermost): `#ffffff`, `#ebe9ff`, `#d2cefa`, `#b9b4f2`, `#918ae1`
+- **Missed**: `rgba(60,52,140,0.25)` · **Future**: `rgba(255,255,255,0.04)`
+- **Segment borders**: `stroke="rgba(0,0,0,0.35)" strokeWidth="0.4"` on all tile paths
+- **Circular glass plate**: sits behind the SVG as an absolutely-positioned div, `border-radius: 50%`, covers the ring area only (`platePct = 2 * ringEdge / vbSize * 100`). Day number labels float outside the plate but inside the SVG canvas.
+- **Canvas width**: rendered at 92% of screen width (set on container in `app/summary/page.tsx`)
+- **Day labels**: outside outermost ring at `ringEdge + NUM_INSET (12)`, `fontSize="11"`, `rgba(255,255,255,0.30)`, today's date in `#ffffff`
+- **Center**: current date (day + month abbreviation) + today dot at `(CX, CY+19)`
+- **Habit list dot colors** match ring colors by completion rank: white → `#ebe9ff` → `#d2cefa` → `#b9b4f2` → `#918ae1`
 
 ---
 

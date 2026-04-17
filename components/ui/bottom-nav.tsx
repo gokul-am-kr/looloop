@@ -87,37 +87,52 @@ export function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[100] px-4 pb-6 pt-2"
-      style={{
-        background: 'linear-gradient(to top, rgba(5,5,7,0.95) 60%, transparent)',
-      }}>
-      <nav
-        className="flex justify-around items-center px-2 py-2 rounded-2xl"
+    <div className="fixed bottom-0 left-0 right-0 z-[100]"
+      style={{ padding: '0 16px 16px' }}>
+      <div
+        className="flex justify-around items-center"
         style={{
-          background: 'rgba(255,255,255,0.06)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          border: '1px solid rgba(255,255,255,0.09)',
-          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 32px rgba(0,0,0,0.4)',
+          padding: '10px 20px 24px',
+          borderRadius: 24,
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%)',
+          border: '0.5px solid rgba(255,255,255,0.14)',
+          boxShadow: '0 -4px 24px rgba(0,0,0,0.40), 0 8px 32px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.15)',
+          backdropFilter: 'blur(28px)',
+          WebkitBackdropFilter: 'blur(28px)',
         }}>
-        {tabs.map(({ href, label, icon, color }) => {
+        {tabs.map(({ href, label, icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/')
+          if (active) {
+            return (
+              <Link key={href} href={href}
+                className="flex flex-col items-center gap-1"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.16), rgba(255,255,255,0.06))',
+                  borderTop: '0.5px solid rgba(255,255,255,0.30)',
+                  borderLeft: '0.5px solid rgba(255,255,255,0.18)',
+                  borderRight: '0.5px solid rgba(255,255,255,0.05)',
+                  borderBottom: '0.5px solid rgba(255,255,255,0.05)',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.15)',
+                  borderRadius: 16,
+                  padding: '8px 20px',
+                  color: '#ffffff',
+                  opacity: 1,
+                }}>
+                {icon(true, '#ffffff')}
+                <span className="text-[10px] font-medium" style={{ color: '#ffffff' }}>{label}</span>
+              </Link>
+            )
+          }
           return (
             <Link key={href} href={href}
-              className="flex flex-col items-center gap-0.5 min-w-[52px] py-1 px-3 rounded-xl transition-all"
-              style={active ? {
-                background: `${color}18`,
-                boxShadow: `0 0 12px ${color}22`,
-              } : {}}>
-              {icon(active, color)}
-              <span className="text-[10px] font-medium"
-                style={{ color: active ? color : '#5A5A68' }}>
-                {label}
-              </span>
+              className="flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-opacity active:opacity-70"
+              style={{ color: 'rgba(255,255,255,0.55)', opacity: 0.45 }}>
+              {icon(false, 'rgba(255,255,255,0.55)')}
+              <span className="text-[10px] font-medium">{label}</span>
             </Link>
           )
         })}
-      </nav>
+      </div>
     </div>
   )
 }

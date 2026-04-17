@@ -9,14 +9,32 @@ import { RadialSleepChart } from '@/components/ui/radial-sleep-chart'
 import { RadialMoodChart, MOOD_LABELS, MOOD_EMOJI } from '@/components/ui/radial-mood-chart'
 import { SleepScoreCard } from '@/components/ui/sleep-score-card'
 import { computeSleepScore } from '@/lib/sleep-score'
-import { palettes } from '@/lib/characters'
-import type { Edition } from '@/types'
 
 type Tab = 'habits' | 'sleep' | 'mood'
 
 const CHAR_EMOJI: Record<string, string> = { mochi: '🐱', pico: '🌵', jelli: '🪼', inko: '🐙' }
 const CHAR_NAME:  Record<string, string> = {
   mochi: 'Mochi the Cat', pico: 'Pico the Cactus', jelli: 'Jelli the Jellyfish', inko: 'Inko the Octopus',
+}
+
+// Per-rank dot colors for habit list (rank 0 = highest completion = innermost ring)
+const HABIT_DOT_COLORS = [
+  { color: '#ffffff',  glow: '0 0 8px rgba(255,255,255,0.7), 0 0 3px rgba(255,255,255,0.7)' },
+  { color: '#ebe9ff',  glow: '0 0 8px rgba(235,233,255,0.7), 0 0 3px rgba(235,233,255,0.7)' },
+  { color: '#d2cefa',  glow: '0 0 8px rgba(210,206,250,0.7), 0 0 3px rgba(210,206,250,0.7)' },
+  { color: '#b9b4f2',  glow: '0 0 8px rgba(185,180,242,0.7), 0 0 3px rgba(185,180,242,0.7)' },
+  { color: '#918ae1',  glow: '0 0 8px rgba(145,138,225,0.7), 0 0 3px rgba(145,138,225,0.7)' },
+]
+
+const GLASS_CARD_STYLE = {
+  background: 'linear-gradient(145deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.04) 60%, rgba(255,255,255,0.02) 100%)',
+  borderTop: '0.5px solid rgba(255,255,255,0.28)',
+  borderLeft: '0.5px solid rgba(255,255,255,0.18)',
+  borderRight: '0.5px solid rgba(255,255,255,0.04)',
+  borderBottom: '0.5px solid rgba(255,255,255,0.04)',
+  boxShadow: '0 16px 48px rgba(0,0,0,0.65), 0 4px 12px rgba(0,0,0,0.45), 0 1px 3px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.20)',
+  backdropFilter: 'blur(28px)',
+  WebkitBackdropFilter: 'blur(28px)',
 }
 
 // ── Date helpers ─────────────────────────────────────────────────────────────
@@ -151,6 +169,19 @@ export default function SummaryPage() {
   const last7Sleep   = [...sleepLogs].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 7)
   const sleepScore   = computeSleepScore(last7Sleep, 7)
 
+  // ── Sorted habits ────────────────────────────────────────────────────────────
+  const sortedHabits = [...habitNames].sort((a, b) => {
+    const pct = (h: string) => {
+      if (todayDay === 0) return 0
+      const done = Array.from({ length: todayDay }, (_, i) => i + 1).filter(d => {
+        const ds = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+        return habitByDate[ds]?.[h] ?? false
+      }).length
+      return done / todayDay
+    }
+    return pct(b) - pct(a)
+  })
+
   // ── Mood stats ───────────────────────────────────────────────────────────────
   const moodTracked  = moodLogs.length
   const avgMood      = moodTracked > 0
@@ -161,9 +192,14 @@ export default function SummaryPage() {
     : 0
 
   return (
-    <main className="min-h-screen pb-28">
+    <main className="min-h-screen pb-28 relative" style={{ background: '#07051a', overflow: 'clip' }}>
+      {/* Background orbs */}
+      <div style={{ position: 'absolute', zIndex: 0, width: 300, height: 300, borderRadius: '50%', background: '#7F77DD', opacity: 0.65, filter: 'blur(90px)', top: -90, left: -80, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', zIndex: 0, width: 240, height: 240, borderRadius: '50%', background: '#534AB7', opacity: 0.50, filter: 'blur(75px)', top: 140, right: -70, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', zIndex: 0, width: 240, height: 240, borderRadius: '50%', background: '#AFA9EC', opacity: 0.30, filter: 'blur(100px)', bottom: 50, left: -20, pointerEvents: 'none' }} />
+
       {/* ── Header — minimal, elegant ── */}
-      <div className="px-5 pt-12 flex flex-col gap-4">
+      <div className="px-5 pt-12 flex flex-col gap-4" style={{ position: 'relative', zIndex: 1 }}>
         {/* Month nav */}
         <div className="flex items-center justify-between">
           <button onClick={prevMonth}
@@ -197,39 +233,26 @@ export default function SummaryPage() {
           </div>
         </div>
 
-        {/* Tab toggle — glassmorphism */}
-        <div className="flex gap-2 p-1.5 rounded-2xl"
-          style={{
-            background: 'rgba(255,255,255,0.04)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255,255,255,0.07)',
-            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 24px rgba(0,0,0,0.3)',
-          }}>
+        {/* Tab toggle — glass */}
+        <div className="flex gap-1.5">
           {(['habits', 'sleep', 'mood'] as Tab[]).map(t => {
             const isActive = tab === t
-            const habitAccent = palettes[edition as Edition]?.accent ?? '#30D158'
-            const colors: Record<Tab, { accent: string; glow: string; text: string }> = {
-              habits: { accent: habitAccent, glow: `${habitAccent}44`, text: '#000' },
-              sleep:  { accent: '#5AC8FA',   glow: 'rgba(90,200,250,0.25)',  text: '#000' },
-              mood:   { accent: '#BF5AF2',   glow: 'rgba(191,90,242,0.25)',  text: '#fff' },
-            }
-            const { accent, glow, text } = colors[t]
             return (
               <button key={t} onClick={() => setTab(t)}
-                className="flex-1 py-2 text-xs font-semibold capitalize rounded-xl transition-all duration-200"
+                className="flex-1 py-2 text-xs font-semibold capitalize rounded-[20px] transition-all duration-200"
                 style={isActive ? {
-                  background: `linear-gradient(145deg, ${accent}cc, ${accent}99)`,
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
-                  border: `1px solid ${accent}55`,
-                  boxShadow: `0 0 16px ${glow}, inset 0 1px 0 rgba(255,255,255,0.2)`,
-                  color: text,
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.16), rgba(255,255,255,0.06))',
+                  borderTop: '0.5px solid rgba(255,255,255,0.32)',
+                  borderLeft: '0.5px solid rgba(255,255,255,0.20)',
+                  borderRight: '0.5px solid rgba(255,255,255,0.05)',
+                  borderBottom: '0.5px solid rgba(255,255,255,0.05)',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.50), 0 1px 4px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.15)',
+                  color: '#ffffff',
                   letterSpacing: '0.05em',
                 } : {
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.06)',
-                  color: '#7A7A86',
+                  background: 'transparent',
+                  border: '0.5px solid rgba(255,255,255,0.08)',
+                  color: 'rgba(255,255,255,0.28)',
                   letterSpacing: '0.05em',
                 }}>
                 {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -240,14 +263,14 @@ export default function SummaryPage() {
       </div>
 
       {loading ? (
-        <p className="px-5 mt-8 text-sm text-muted">Loading…</p>
+        <p className="px-5 mt-8 text-sm text-muted" style={{ position: 'relative', zIndex: 1 }}>Loading…</p>
       ) : (
-        <>
+        <div style={{ position: 'relative', zIndex: 1 }}>
           {/* Chart area */}
           {tab === 'habits' ? (
             <div className="flex flex-col">
-              {/* Fan chart — full width */}
-              <div className="px-2 mt-2">
+              {/* Fan chart — 92% width, centered */}
+              <div className="mt-2 mx-auto" style={{ width: '92%' }}>
                 <RadialHabitChart
                   habitNames={habitNames}
                   habitByDate={habitByDate}
@@ -274,32 +297,22 @@ export default function SummaryPage() {
                     color="var(--char-accent)"
                   />
                 </div>
-                {habitNames.length > 0 && (
-                  <div className="flex flex-col gap-2">
-                    {[...habitNames]
-                      .sort((a, b) => {
-                        const pct = (h: string) => {
-                          if (todayDay === 0) return 0
-                          const done = Array.from({ length: todayDay }, (_, i) => i + 1).filter(d => {
-                            const ds = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-                            return habitByDate[ds]?.[h] ?? false
-                          }).length
-                          return done / todayDay
-                        }
-                        return pct(b) - pct(a)
-                      })
-                      .map(habit => (
-                        <HabitCard
-                          key={habit}
-                          habit={habit}
-                          year={year}
-                          month={month}
-                          daysInMonth={daysInMonth}
-                          todayDay={todayDay}
-                          habitByDate={habitByDate}
-                          onSelect={() => setSelectedHabit(habit)}
-                        />
-                      ))}
+                {sortedHabits.length > 0 && (
+                  <div className="rounded-[20px]" style={GLASS_CARD_STYLE}>
+                    {sortedHabits.map((habit, rank) => (
+                      <HabitCard
+                        key={habit}
+                        habit={habit}
+                        rank={rank}
+                        isLast={rank === sortedHabits.length - 1}
+                        year={year}
+                        month={month}
+                        daysInMonth={daysInMonth}
+                        todayDay={todayDay}
+                        habitByDate={habitByDate}
+                        onSelect={() => setSelectedHabit(habit)}
+                      />
+                    ))}
                   </div>
                 )}
               </div>
@@ -368,7 +381,7 @@ export default function SummaryPage() {
               </button>
             </div>
           )}
-        </>
+        </div>
       )}
 
       {/* Per-habit detail sheet */}
@@ -391,7 +404,7 @@ export default function SummaryPage() {
 }
 
 function HabitCard({
-  habit, year, month, daysInMonth, todayDay, habitByDate, onSelect,
+  habit, year, month, daysInMonth: _daysInMonth, todayDay, habitByDate, onSelect, rank, isLast,
 }: {
   habit: string
   year: number
@@ -400,95 +413,49 @@ function HabitCard({
   todayDay: number
   habitByDate: Record<string, Record<string, boolean>>
   onSelect: () => void
+  rank: number
+  isLast: boolean
 }) {
   const daysDone = Array.from({ length: todayDay }, (_, i) => i + 1).filter(d => {
     const ds = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
     return habitByDate[ds]?.[habit] ?? false
   }).length
-  const pct        = todayDay > 0 ? Math.round(daysDone / todayDay * 100) : 0
-  const bestStreak = computeHabitStreak(habit, habitByDate, year, month, daysInMonth, todayDay)
+  const pct = todayDay > 0 ? Math.round(daysDone / todayDay * 100) : 0
+  const dot = HABIT_DOT_COLORS[Math.min(rank, HABIT_DOT_COLORS.length - 1)]
 
-  return (
-    <div onClick={onSelect} className="rounded-2xl px-4 py-3.5 relative overflow-hidden flex items-center gap-4 cursor-pointer active:scale-[0.98] transition-transform"
-      style={{
-        background: 'rgba(255,255,255,0.04)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        border: '1px solid rgba(255,255,255,0.07)',
-        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 12px rgba(0,0,0,0.25)',
-      }}
-    >
-      {/* Accent dot */}
-      <div className="w-2 h-2 rounded-full shrink-0"
-        style={{ background: 'var(--char-accent)', boxShadow: '0 0 6px var(--char-accent)' }} />
-
-      {/* Name + progress bar */}
-      <div className="flex-1">
-        <p className="text-sm font-medium text-white leading-tight">{habit}</p>
-        <div className="mt-1.5 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
-          <div className="h-full rounded-full transition-all duration-500"
-            style={{
-              width: `${pct}%`,
-              background: 'linear-gradient(90deg, var(--char-accent), color-mix(in srgb, var(--char-accent) 60%, white))',
-              boxShadow: '0 0 6px var(--char-accent)',
-            }} />
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="flex items-center gap-4 shrink-0">
-        <div className="text-center">
-          <p className="text-base font-bold leading-none" style={{ color: 'var(--char-accent)' }}>{pct}%</p>
-          <p className="text-[9px] mt-0.5 text-muted">{daysDone}/{todayDay}d</p>
-        </div>
-        <div className="text-center">
-          <p className="text-base font-bold leading-none text-white">{bestStreak}</p>
-          <p className="text-[9px] mt-0.5 text-muted">streak</p>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function StatCard({ label, value, sub, color }: {
-  label: string; value: string; sub: string; color: string
-}) {
-  return (
-    <div className="glass rounded-2xl px-4 py-4">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">{label}</p>
-      <p className="text-2xl font-bold mt-1 leading-none" style={{ color }}>{value}</p>
-      <p className="text-[11px] text-muted mt-1">{sub}</p>
-    </div>
-  )
-}
-
-function PremiumStatCard({ label, value, sub, color }: {
-  label: string; value: string; sub: string; color: string
-}) {
   return (
     <div
-      className="rounded-2xl px-4 py-4 relative overflow-hidden"
-      style={{
-        background: 'rgba(255,255,255,0.04)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        border: '1px solid rgba(255,255,255,0.07)',
-        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(0,0,0,0.2), 0 0 20px ${color}18`,
-      }}
+      onClick={onSelect}
+      className="px-4 py-3.5 flex items-center gap-3 cursor-pointer active:opacity-70 transition-opacity"
+      style={isLast ? {} : { borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}
     >
-      {/* Diagonal color wash */}
-      <div className="absolute inset-0 rounded-2xl pointer-events-none"
-        style={{ background: `linear-gradient(135deg, ${color}22 0%, transparent 55%)` }} />
-      {/* Top-left corner bloom */}
-      <div className="absolute -top-4 -left-4 w-20 h-20 rounded-full pointer-events-none"
-        style={{ background: `radial-gradient(circle, ${color} 0%, transparent 70%)`, opacity: 0.15 }} />
-      {/* Inner top-edge specular */}
-      <div className="absolute top-0 left-0 right-0 h-px rounded-t-2xl pointer-events-none"
-        style={{ background: 'linear-gradient(90deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04), transparent)' }} />
-      <p className="text-[9px] font-semibold tracking-widest uppercase relative" style={{ color: '#8E8E9A' }}>{label}</p>
-      <p className="text-3xl font-bold mt-2 leading-none relative"
-        style={{ color, textShadow: `0 0 18px ${color}66` }}>{value}</p>
-      <p className="text-[10px] mt-1.5 relative" style={{ color: '#6B6B78' }}>{sub}</p>
+      <div style={{ width: 11, height: 11, borderRadius: '50%', flexShrink: 0, background: dot.color, boxShadow: dot.glow }} />
+      <p className="flex-1 text-sm font-medium truncate" style={{ color: 'rgba(255,255,255,0.88)' }}>{habit}</p>
+      <p className="text-sm font-medium shrink-0" style={{ color: 'rgba(255,255,255,0.35)' }}>{pct}%</p>
+    </div>
+  )
+}
+
+function StatCard({ label, value, sub, color: _color }: {
+  label: string; value: string; sub: string; color: string
+}) {
+  return (
+    <div className="rounded-[20px] px-4 py-4" style={GLASS_CARD_STYLE}>
+      <p className="text-[10px] uppercase tracking-[0.08em] mb-1.5" style={{ color: 'rgba(175,169,236,0.90)' }}>{label}</p>
+      <p className="text-[26px] font-medium leading-none" style={{ color: '#ffffff', textShadow: '0 2px 12px rgba(175,169,236,0.30)' }}>{value}</p>
+      {sub && <p className="text-[10px] mt-1" style={{ color: 'rgba(175,169,236,0.45)' }}>{sub}</p>}
+    </div>
+  )
+}
+
+function PremiumStatCard({ label, value, sub, color: _color }: {
+  label: string; value: string; sub: string; color: string
+}) {
+  return (
+    <div className="rounded-[20px] px-4 py-4" style={GLASS_CARD_STYLE}>
+      <p className="text-[10px] uppercase tracking-[0.08em] mb-1.5" style={{ color: 'rgba(175,169,236,0.90)' }}>{label}</p>
+      <p className="text-[26px] font-medium leading-none" style={{ color: '#ffffff', textShadow: '0 2px 12px rgba(175,169,236,0.30)' }}>{value}</p>
+      {sub && <p className="text-[10px] mt-1" style={{ color: 'rgba(175,169,236,0.45)' }}>{sub}</p>}
     </div>
   )
 }

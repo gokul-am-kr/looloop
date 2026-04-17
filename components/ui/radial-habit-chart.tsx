@@ -1,43 +1,53 @@
 'use client'
 
-// Radial fan chart — leftward fan, NOT starting perpendicular
-// Fan: 100° (upper-left) → 260° (lower-left) through 180° (leftmost)
-// Labels sit in the 60°–100° gap with bullet-journal guide lines.
+// Radial ring chart — near-full circle with a small gap at the top
+// Gap: 0.18 rad centred at top (90° in this SVG convention where 90° = up)
+// Sweep: CCW (increasing angle), from just-past-top to just-before-top
 
-import { palettes } from '@/lib/characters'
-import type { Edition } from '@/types'
+const RING_H    = 13
+const RING_GAP  = 1
+const DAY_INSET = 0.004 * (180 / Math.PI)  // 0.008 rad total gap between adjacent segments
 
-const RING_H    = 11
-const RING_GAP  = 2
-const DAY_INSET = 0.4    // angular inset each side → visible gap between tiles
-const R_START   = 29
-const FAN_START = 100
-const FAN_END   = 260
-const FAN_SPAN  = FAN_END - FAN_START
+const R_START   = 40   // inner radius of innermost ring — larger = bigger chart
 
-const MARGIN_L  = 17
-const MARGIN_T  = 17
-const LABEL_W   = 45
+// Full-circle geometry ─ gap centred at 90° (top)
+const GAP_DEG   = 0.18 * (180 / Math.PI)   // ≈ 10.31°
+const FAN_START = 90 + GAP_DEG / 2           // ≈ 95.16°
+const FAN_SPAN  = 360 - GAP_DEG              // ≈ 349.69°
+const FAN_END   = FAN_START + FAN_SPAN        // ≈ 444.85°
 
+const MARGIN    = 14   // margin around full ring
+const NUM_INSET = 12   // offset for day-number labels past ring edge
+
+// Segment colours — per-ring (innermost = white, outermost = deepest purple)
+const RING_DONE_HEX  = ['#ffffff', '#ebe9ff', '#d2cefa', '#b9b4f2', '#918ae1']
+const MISSED_COLOR   = 'rgba(60,52,140,0.25)'
+const FUTURE_COLOR   = 'rgba(255,255,255,0.04)'
+const PARTICLE_COLOR = '#AFA9EC'
+
+function getRingColor(hi: number): string {
+  return RING_DONE_HEX[Math.min(hi, RING_DONE_HEX.length - 1)]
+}
 
 const CHAR_EMOJI: Record<string, string> = {
   mochi: '🐱', pico: '🌵', jelli: '🪼', inko: '🐙',
 }
 
-// Subtle ambient particles: [radius-fraction, angle-deg, dot-size, anim-delay-s]
+// Ambient particles distributed around the full circle
+// [radius-fraction, angle-deg, dot-size, anim-delay-s]
 const PARTICLES: [number, number, number, number][] = [
-  [0.52, 148, 1.4, 0.0 ],
-  [0.78, 200, 1.8, 1.6 ],
-  [0.93, 232, 1.1, 0.7 ],
-  [1.12, 158, 1.5, 2.3 ],
-  [1.07, 182, 1.3, 0.3 ],
-  [0.62, 252, 1.0, 1.9 ],
-  [0.86, 118, 1.2, 3.1 ],
-  [0.38, 172, 0.9, 2.6 ],
-  [1.18, 213, 1.4, 1.0 ],
-  [0.70, 133, 0.8, 3.6 ],
-  [0.45, 240, 1.0, 0.5 ],
-  [1.02, 145, 1.1, 4.0 ],
+  [0.52,   0, 1.4, 0.0],
+  [0.78,  45, 1.8, 1.6],
+  [0.93, 100, 1.1, 0.7],
+  [0.65, 150, 1.5, 2.3],
+  [0.85, 195, 1.3, 0.3],
+  [0.62, 240, 1.0, 1.9],
+  [0.86, 285, 1.2, 3.1],
+  [0.38, 330, 0.9, 2.6],
+  [1.05,  70, 1.4, 1.0],
+  [0.70, 170, 0.8, 3.6],
+  [0.45, 260, 1.0, 0.5],
+  [1.02, 350, 1.1, 4.0],
 ]
 
 interface Props {
@@ -61,7 +71,7 @@ function segPath(cx: number, cy: number, r1: number, r2: number, a1: number, a2:
   const [bx, by]   = toXY(cx, cy, r1, a2)
   const [cx2, cy2] = toXY(cx, cy, r2, a2)
   const [dx, dy]   = toXY(cx, cy, r2, a1)
-  const large = (a2 - a1 > 180) ? 1 : 0
+  const large = Math.abs(a2 - a1) > 180 ? 1 : 0
   return (
     `M ${ax.toFixed(2)} ${ay.toFixed(2)} ` +
     `A ${r1} ${r1} 0 ${large} 0 ${bx.toFixed(2)} ${by.toFixed(2)} ` +
@@ -70,16 +80,8 @@ function segPath(cx: number, cy: number, r1: number, r2: number, a1: number, a2:
   )
 }
 
-
-
 function mkDate(y: number, m: number, d: number) {
   return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-}
-
-function hexDarken(hex: string, t: number) {
-  const n = parseInt(hex.replace('#', ''), 16)
-  const f = (c: number) => Math.round(c * (1 - t))
-  return `#${[f((n >> 16) & 0xff), f((n >> 8) & 0xff), f(n & 0xff)].map(v => v.toString(16).padStart(2, '0')).join('')}`
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -106,277 +108,237 @@ export function RadialHabitChart({ habitNames, habitByDate, year, month, edition
     )
   }
 
-  const outerR      = R_START + habitNames.length * (RING_H + RING_GAP) - RING_GAP
-  const CX          = outerR + MARGIN_L
-  const CY          = Math.ceil(outerR * Math.sin((FAN_START * Math.PI) / 180)) + MARGIN_T
-  const vbW         = CX + LABEL_W
-  const viewH       = CY + outerR + RING_H + 14
-  const emoji       = CHAR_EMOJI[edition] ?? '🐱'
-  const accent      = palettes[edition as Edition]?.accent ?? '#FF6B35'
-  const accentMiss  = hexDarken(accent, 0.72)  // dark tinted version for missed tiles
-  // Straight vertical boundary between tiles and labels.
-  // R_START is the innermost ring inner edge at FAN_START — the rightmost point
-  // any tile can reach, so labels starting here never overlap tiles.
-  const commonSX    = CX + R_START * Math.cos((FAN_START * Math.PI) / 180)
+  // Layout — square viewBox centred on (CX, CY)
+  const outerR    = R_START + habitNames.length * (RING_H + RING_GAP) - RING_GAP
+  const ringEdge  = outerR + RING_H
+  const labelR    = ringEdge + NUM_INSET
+  const halfSize  = labelR + MARGIN
+  const CX        = halfSize
+  const CY        = halfSize
+  const vbSize    = halfSize * 2
+  const centerR   = R_START - 4   // inner circle radius
+
+  // Date for centre display (always the actual current date)
+  const centerDay   = now.getDate().toString()
+  const centerMonth = now.toLocaleString('en-IN', { month: 'short' }).toUpperCase()
+
+  const _emoji = CHAR_EMOJI[edition] ?? '🐱'   // unused visually but keeps prop meaningful
+
+  // Circular plate covers exactly the ring area — labels (at labelR) float outside it
+  const platePct = (2 * ringEdge) / vbSize * 100
 
   return (
     <div className="w-full">
-      <svg
-        key={`${year}-${month}`}
-        viewBox={`0 0 ${vbW} ${viewH}`}
-        width="100%"
-        style={{ overflow: 'visible' }}
-      >
-        <defs>
-          <style>{`
-            @keyframes rhcFade   { from { opacity:0 } to { opacity:1 } }
-            @keyframes rhcPulse  { 0%,100% { opacity: 0.18; r: 1.1; } 50% { opacity: 0.55; r: 1.8; } }
-            @keyframes rhcDrift  {
-              0%   { transform: translate(0px, 0px); }
-              33%  { transform: translate(1.5px, -2px); }
-              66%  { transform: translate(-1px, 1.5px); }
-              100% { transform: translate(0px, 0px); }
-            }
-          `}</style>
+      {/* Positioning context for glass plate + SVG */}
+      <div style={{ position: 'relative' }}>
+        {/* ── Circular glass plate (sits behind the ring chart) ── */}
+        <div style={{
+          position: 'absolute',
+          width: `${platePct}%`,
+          aspectRatio: '1',
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle at center, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0.01) 100%)',
+          border: '0.5px solid rgba(255,255,255,0.12)',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.70), 0 8px 32px rgba(0,0,0,0.50), 0 2px 8px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.10), inset 0 -1px 0 rgba(0,0,0,0.20), 0 0 60px rgba(83,74,183,0.15)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+        }} />
 
-          {/* Large ambient glow behind the done-tile cluster */}
-          <filter id="rhc-ambient" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="9" />
-          </filter>
+        {/* ── SVG ring chart (above glass plate) ── */}
+        <div style={{ filter: 'drop-shadow(0 0 20px rgba(175,169,236,0.18))', position: 'relative' }}>
+        <svg
+          key={`${year}-${month}`}
+          viewBox={`0 0 ${vbSize} ${vbSize}`}
+          width="100%"
+          style={{ overflow: 'visible' }}
+        >
+          <defs>
+            <style>{`
+              @keyframes rhcFade  { from { opacity:0 } to { opacity:1 } }
+              @keyframes rhcPulse { 0%,100% { opacity:.18 } 50% { opacity:.55 } }
+              @keyframes rhcDrift {
+                0%   { transform: translate(0,0); }
+                33%  { transform: translate(1.5px,-2px); }
+                66%  { transform: translate(-1px,1.5px); }
+                100% { transform: translate(0,0); }
+              }
+            `}</style>
 
-          {/* Particle glow */}
-          <filter id="rhc-particle" x="-200%" y="-200%" width="500%" height="500%">
-            <feGaussianBlur stdDeviation="1.8" />
-          </filter>
+            {/* Ambient halo blur */}
+            <filter id="rhc-ambient" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="8" />
+            </filter>
 
-          {/* (label paths removed — labels are now straight pills) */}
+            {/* Particle glow */}
+            <filter id="rhc-particle" x="-200%" y="-200%" width="500%" height="500%">
+              <feGaussianBlur stdDeviation="1.8" />
+            </filter>
 
-          {/* Glass chip fill gradient — accent tint fading to transparent */}
-          <linearGradient id={`rhc-chip-grad-${habitNames.length}`}
-            x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%"   stopColor={accent} stopOpacity="0.18" />
-            <stop offset="60%"  stopColor={accent} stopOpacity="0.08" />
-            <stop offset="100%" stopColor={accent} stopOpacity="0.03" />
-          </linearGradient>
+            {/* Centre circle deep shadow */}
+            <filter id="rhc-center-shadow" x="-80%" y="-80%" width="260%" height="260%">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="10" result="blur" />
+              <feFlood floodColor="#000000" floodOpacity="0.90" result="color" />
+              <feComposite in="color" in2="blur" operator="in" result="shadow" />
+              <feMerge>
+                <feMergeNode in="shadow" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
 
-          {/* Glass chip blur filter */}
-          <filter id="rhc-chip-blur" x="-10%" y="-40%" width="120%" height="180%">
-            <feGaussianBlur stdDeviation="1.5" />
-          </filter>
+            {/* Today dot glow */}
+            <filter id="rhc-today-glow" x="-300%" y="-300%" width="700%" height="700%">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="2.5" result="blur" />
+              <feFlood floodColor="rgba(255,255,255,0.90)" result="color" />
+              <feComposite in="color" in2="blur" operator="in" result="glow" />
+              <feMerge>
+                <feMergeNode in="glow" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
 
-          {/* Common clip for ambient halo */}
-          <clipPath id="rhc-tiles-clip">
-            <rect x="0" y="0" width={commonSX.toFixed(2)} height={viewH} />
-          </clipPath>
-          {/* Per-ring clips — diagonal polygon matching the angled label cut */}
-          {habitNames.map((_, hi) => {
-            const r1 = R_START + hi * (RING_H + RING_GAP)
-            const r2 = r1 + RING_H
-            const [lxOuter, dy] = toXY(CX, CY, r2, FAN_START)
-            const [lxInner, ay] = toXY(CX, CY, r1, FAN_START)
-            const pts = [
-              `0,0`,
-              `${lxOuter.toFixed(2)},0`,
-              `${lxOuter.toFixed(2)},${dy.toFixed(2)}`,
-              `${lxInner.toFixed(2)},${ay.toFixed(2)}`,
-              `${lxInner.toFixed(2)},${viewH}`,
-              `0,${viewH}`,
-            ].join(' ')
-            return (
-              <clipPath key={`rhc-ring-clip-${hi}`} id={`rhc-ring-clip-${hi}`}>
-                <polygon points={pts} />
-              </clipPath>
-            )
-          })}
-        </defs>
-
-        {/* ── Layer 0: ambient halo (blurred done tiles) ── */}
-        <g filter="url(#rhc-ambient)" opacity="0.38" clipPath="url(#rhc-tiles-clip)">
-          {habitNames.flatMap((name, hi) => {
-            const r1 = R_START + hi * (RING_H + RING_GAP)
-            const r2 = r1 + RING_H
-            return days.map(day => {
-              const isFuture = isCurrentMon && day > todayDay
-              if (isFuture) return null
-              const log = habitByDate[mkDate(year, month, day)] ?? {}
-              if (!log[name]) return null
-              return (
-                <path key={`amb-${hi}-${day}`}
-                  d={segPath(CX, CY, r1, r2, a1(day), a2(day))}
-                  fill={accent}
-                />
-              )
-            })
-          })}
-        </g>
-
-        {/* ── Layer 1: ambient particles / light dust ── */}
-        {PARTICLES.map(([rf, ang, size, delay], i) => {
-          const pr = rf * outerR
-          const [px, py] = toXY(CX, CY, pr, ang)
-          // Only show particles within the fan angular range or just beyond
-          const inRange = ang >= FAN_START - 20 && ang <= FAN_END + 20
-          if (!inRange) return null
-          return (
-            <g key={`p-${i}`}
-              style={{
-                animation: `rhcDrift ${4 + i * 0.7}s ease-in-out ${delay}s infinite`,
-                transformOrigin: `${px.toFixed(1)}px ${py.toFixed(1)}px`,
-              }}
-            >
-              {/* Soft glow bloom */}
-              <circle cx={px} cy={py} r={size * 3} fill={accent} opacity={0.06}
-                filter="url(#rhc-particle)" />
-              {/* Crisp core dot */}
-              <circle cx={px} cy={py} r={size * 0.6} fill={accent}
-                style={{ animation: `rhcPulse ${2.8 + i * 0.4}s ease-in-out ${delay}s infinite` }}
-              />
-            </g>
-          )
-        })}
-
-        {/* ── Day separator pipes — thin radial ticks at every segment boundary ── */}
-        {Array.from({ length: daysInMonth + 1 }, (_, i) => {
-          const angle = FAN_START + i * angPerDay
-          const [x1, y1] = toXY(CX, CY, R_START, angle)
-          const [x2, y2] = toXY(CX, CY, outerR + RING_H, angle)
-          return (
-            <line key={`sep-${i}`}
-              x1={x1.toFixed(2)} y1={y1.toFixed(2)}
-              x2={x2.toFixed(2)} y2={y2.toFixed(2)}
-              stroke="#000" strokeWidth="0.8" opacity="0.6"
-            />
-          )
-        })}
-
-        {/* ── Layers 2–N: tile rings, outermost first (each clipped to its own arc edge) ── */}
-        {[...habitNames].reverse().map((name, revHi) => {
-          const hi = habitNames.length - 1 - revHi
-          const r1 = R_START + hi * (RING_H + RING_GAP)
-          const r2 = r1 + RING_H
-
-          return (
-            <g key={`ring-${hi}`} clipPath={`url(#rhc-ring-clip-${hi})`}>
-              {days.map((day, dayIdx) => {
-                const ds       = mkDate(year, month, day)
+          {/* ── Layer 0: ambient halo (blurred done tiles) ── */}
+          <g filter="url(#rhc-ambient)" opacity="0.45">
+            {habitNames.flatMap((name, hi) => {
+              const r1 = R_START + hi * (RING_H + RING_GAP)
+              const r2 = r1 + RING_H
+              const ringColor = getRingColor(hi)
+              return days.map(day => {
                 const isFuture = isCurrentMon && day > todayDay
-                const done     = !isFuture && !!(habitByDate[ds] ?? {})[name]
-                const da1 = a1(day), da2 = a2(day)
-                const anim = { animation: `rhcFade 0.4s ease ${dayIdx * 11}ms both` as const }
-                const d    = segPath(CX, CY, r1, r2, da1, da2)
-
-                if (isFuture) return (
-                  <path key={day} d={d}
-                    fill="#0F0F16" stroke="#000" strokeWidth="0.5" style={anim} />
-                )
-
+                if (isFuture) return null
+                const log = habitByDate[mkDate(year, month, day)] ?? {}
+                if (!log[name]) return null
                 return (
-                  <path key={day} d={d}
-                    fill={done ? accent : accentMiss}
-                    stroke="#000" strokeWidth="0.5"
-                    onClick={() => onDayClick(ds)}
-                    style={{ cursor: 'pointer', ...anim }}
+                  <path key={`amb-${hi}-${day}`}
+                    d={segPath(CX, CY, r1, r2, a1(day), a2(day))}
+                    fill={ringColor}
                   />
                 )
-              })}
-            </g>
-          )
-        })}
+              })
+            })}
+          </g>
 
-        {/* ── Habit label gradients + separators + text ── */}
-        {habitNames.map((name, hi) => {
-          const r1 = R_START + hi * (RING_H + RING_GAP)
-          const r2 = r1 + RING_H
-          // Angled cut: outer arc edge (top-left) → inner arc edge (bottom-left)
-          const [lxOuter, dy] = toXY(CX, CY, r2, FAN_START)
-          const [lxInner, ay] = toXY(CX, CY, r1, FAN_START)
-          const textY  = (dy + ay) / 2
-          const lineEnd = vbW - 2
-          const gradId = `rhc-label-grad-${hi}`
-          // Trapezoid: diagonal left edge follows the radial line at FAN_START
-          const bg = [
-            `M ${lxOuter.toFixed(2)} ${dy.toFixed(2)}`,
-            `L ${lineEnd} ${dy.toFixed(2)}`,
-            `L ${lineEnd} ${ay.toFixed(2)}`,
-            `L ${lxInner.toFixed(2)} ${ay.toFixed(2)} Z`,
-          ].join(' ')
-          return (
-            <g key={`label-${hi}`}>
-              <defs>
-                <linearGradient id={gradId} x1={lxOuter.toFixed(2)} y1="0" x2={lineEnd} y2="0"
-                  gradientUnits="userSpaceOnUse">
-                  <stop offset="0%"   stopColor={accent} stopOpacity="0.18" />
-                  <stop offset="50%"  stopColor={accent} stopOpacity="0.07" />
-                  <stop offset="100%" stopColor={accent} stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path d={bg} fill={`url(#${gradId})`} />
-              <line x1={lxOuter.toFixed(2)} y1={dy.toFixed(2)} x2={lineEnd} y2={dy.toFixed(2)}
-                stroke="#000" strokeWidth="0.8" opacity="0.6" />
-              {hi === habitNames.length - 1 && (
-                <line x1={lxInner.toFixed(2)} y1={ay.toFixed(2)} x2={lineEnd} y2={ay.toFixed(2)}
-                  stroke="#000" strokeWidth="0.8" opacity="0.6" />
-              )}
-              <text
-                x={commonSX + 4} y={textY}
-                dominantBaseline="middle"
-                fill="#C0C0CA" fontSize="4.5"
-                fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
-                letterSpacing="0.3"
+          {/* ── Layer 1: ambient particles ── */}
+          {PARTICLES.map(([rf, ang, size, delay], i) => {
+            const pr = rf * outerR
+            const [px, py] = toXY(CX, CY, pr, ang)
+            return (
+              <g key={`p-${i}`}
+                style={{
+                  animation: `rhcDrift ${4 + i * 0.7}s ease-in-out ${delay}s infinite`,
+                  transformOrigin: `${px.toFixed(1)}px ${py.toFixed(1)}px`,
+                }}
               >
-                {name.length > 12 ? name.slice(0, 11) + '…' : name}
-              </text>
-            </g>
-          )
-        })}
+                <circle cx={px} cy={py} r={size * 3} fill={PARTICLE_COLOR} opacity={0.05}
+                  filter="url(#rhc-particle)" />
+                <circle cx={px} cy={py} r={size * 0.6} fill={PARTICLE_COLOR}
+                  style={{ animation: `rhcPulse ${2.8 + i * 0.4}s ease-in-out ${delay}s infinite` }} />
+              </g>
+            )
+          })}
 
-        {/* ── Day number labels — outside the outermost ring ── */}
-        {days.map(day => {
-          if (day === todayDay) return null  // rendered by circle indicator below
-          const rOuter = outerR + RING_H + 2
-          const [x, y] = toXY(CX, CY, rOuter, aMid(day))
-          const isMilestone = showLabel(day)
-          return (
-            <text key={`lbl-${day}`} x={x} y={y}
-              textAnchor="middle" dominantBaseline="middle"
-              fill={isMilestone ? '#7A7A86' : '#3A3A48'}
-              fontSize={isMilestone ? '6' : '4'}
-              fontWeight="400"
-              fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
-            >{day}</text>
-          )
-        })}
 
-        {/* Today circle indicator */}
-        {todayDay > 0 && (() => {
-          const rOuter = outerR + RING_H + 2
-          const [tx, ty] = toXY(CX, CY, rOuter, aMid(todayDay))
-          return (
-            <g>
-              <circle cx={tx} cy={ty} r={4.5} fill="#ffffff" opacity="0.75" />
-              <text x={tx} y={ty + 1.9}
-                textAnchor="middle"
-                fill="#000000" fontSize="5" fontWeight="700"
+          {/* ── Tile rings ── */}
+          {[...habitNames].reverse().map((name, revHi) => {
+            const hi = habitNames.length - 1 - revHi
+            const r1 = R_START + hi * (RING_H + RING_GAP)
+            const r2 = r1 + RING_H
+            const ringColor = getRingColor(hi)
+
+            return (
+              <g key={`ring-${hi}`}>
+                {days.map((day, dayIdx) => {
+                  const ds       = mkDate(year, month, day)
+                  const isFuture = isCurrentMon && day > todayDay
+                  const done     = !isFuture && !!(habitByDate[ds] ?? {})[name]
+                  const d        = segPath(CX, CY, r1, r2, a1(day), a2(day))
+                  const anim     = { animation: `rhcFade 0.4s ease ${dayIdx * 11}ms both` as const }
+
+                  if (isFuture) return (
+                    <path key={day} d={d}
+                      fill={FUTURE_COLOR}
+                      stroke="rgba(0,0,0,0.35)" strokeWidth="0.4"
+                      style={anim} />
+                  )
+
+                  return (
+                    <path key={day} d={d}
+                      fill={done ? ringColor : MISSED_COLOR}
+                      stroke="rgba(0,0,0,0.35)" strokeWidth="0.4"
+                      onClick={() => onDayClick(ds)}
+                      style={{ cursor: 'pointer', ...anim }}
+                    />
+                  )
+                })}
+              </g>
+            )
+          })}
+
+          {/* ── Centre circle (drawn after rings so it covers the inner hole) ── */}
+          <circle cx={CX} cy={CY} r={centerR}
+            fill="rgba(7,5,26,0.92)"
+            filter="url(#rhc-center-shadow)"
+          />
+
+          {/* ── Day-number labels outside outermost ring ── */}
+          {days.map(day => {
+            if (!showLabel(day)) return null
+            const isToday = day === todayDay
+            const [x, y] = toXY(CX, CY, labelR, aMid(day))
+            return (
+              <text key={`lbl-${day}`} x={x.toFixed(2)} y={y.toFixed(2)}
+                textAnchor="middle" dominantBaseline="middle"
+                fill={isToday ? '#ffffff' : 'rgba(255,255,255,0.30)'}
+                fontSize="11"
+                fontWeight="500"
                 fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
-              >{todayDay}</text>
-            </g>
-          )
-        })()}
+              >{day}</text>
+            )
+          })}
 
-        {/* Character emoji */}
-        <text x={CX} y={CY} textAnchor="middle" dominantBaseline="middle" fontSize="15">{emoji}</text>
-      </svg>
+          {/* ── Centre date: day number ── */}
+          <text x={CX} y={CY - 5}
+            textAnchor="middle" dominantBaseline="middle"
+            fill="#ffffff"
+            fontSize="22" fontWeight="500"
+            fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
+            style={{
+              filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.30)) drop-shadow(0 2px 4px rgba(0,0,0,0.50))',
+            }}
+          >{centerDay}</text>
+
+          {/* ── Centre date: month abbreviation ── */}
+          <text x={CX} y={CY + 8}
+            textAnchor="middle" dominantBaseline="middle"
+            fill="rgba(255,255,255,0.38)"
+            fontSize="7" fontWeight="500"
+            letterSpacing="0.12em"
+            fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
+          >{centerMonth}</text>
+
+          {/* ── Centre dot (today indicator, inside centre circle) ── */}
+          {todayDay > 0 && (
+            <g filter="url(#rhc-today-glow)">
+              <circle cx={CX} cy={CY + 19} r={3} fill="#ffffff" />
+            </g>
+          )}
+        </svg>
+        </div>{/* end drop-shadow wrapper */}
+      </div>{/* end positioning context */}
 
       {/* Legend */}
       <div className="flex items-center gap-5 mt-3 px-1">
-        {[
-          { label: 'Done',   bg: accent    },
-          { label: 'Missed', bg: '#181820' },
-          { label: 'Future', bg: '#0F0F16' },
-        ].map(({ label, bg }) => (
+        {([
+          { label: 'Done',   dotStyle: { background: '#ffffff', boxShadow: '0 0 10px rgba(255,255,255,0.8), 0 0 4px #fff' } },
+          { label: 'Missed', dotStyle: { background: 'rgba(127,119,221,0.45)', boxShadow: '0 0 4px rgba(127,119,221,0.3)' } },
+          { label: 'Future', dotStyle: { background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.20)' } },
+        ]).map(({ label, dotStyle }) => (
           <div key={label} className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-sm" style={{ background: bg }} />
-            <span className="text-[10px] tracking-wide" style={{ color: '#7A7A86' }}>{label}</span>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', ...dotStyle }} />
+            <span className="text-[10px] tracking-wide" style={{ color: 'rgba(255,255,255,0.42)' }}>{label}</span>
           </div>
         ))}
       </div>
