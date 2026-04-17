@@ -9,6 +9,7 @@ interface ActivityRingsProps {
   size: number
   strokeWidth: number
   gap?: number
+  centerBg?: string
   children?: React.ReactNode
 }
 
@@ -17,9 +18,15 @@ export function ActivityRings({
   size,
   strokeWidth,
   gap = 10,
+  centerBg,
   children,
 }: ActivityRingsProps) {
   const center = size / 2
+
+  // Inner edge of the innermost ring — used for the optional center fill circle
+  const innerRingIdx = rings.length - 1
+  const innerRingR   = center - strokeWidth / 2 - innerRingIdx * (strokeWidth + gap)
+  const centerFillR  = Math.max(0, innerRingR - strokeWidth / 2 - 3)
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
@@ -34,6 +41,11 @@ export function ActivityRings({
           ))}
         </defs>
 
+        {/* Optional center fill circle */}
+        {centerBg && (
+          <circle cx={center} cy={center} r={centerFillR} fill={centerBg} />
+        )}
+
         {rings.map((ring, i) => {
           const r             = center - strokeWidth / 2 - i * (strokeWidth + gap)
           const circumference = 2 * Math.PI * r
@@ -44,7 +56,7 @@ export function ActivityRings({
             <g key={i}>
               {/* 1 — Track */}
               <circle cx={center} cy={center} r={r} fill="none"
-                stroke={ring.trackColor ?? '#2C2C2E'} strokeWidth={strokeWidth} />
+                stroke={ring.trackColor ?? 'rgba(255,255,255,0.06)'} strokeWidth={strokeWidth} />
 
               {/* 2 — Main arc */}
               <circle cx={center} cy={center} r={r} fill="none"

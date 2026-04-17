@@ -88,128 +88,163 @@ export default async function DashboardPage() {
     redirect('/auth')
   }
 
+  const CARD_STYLE = {
+    background: 'var(--card-bg)',
+    borderTop: '0.5px solid var(--card-border-t)',
+    borderLeft: '0.5px solid var(--card-border-l)',
+    borderRight: '0.5px solid var(--card-border-r)',
+    borderBottom: '0.5px solid var(--card-border-r)',
+    boxShadow: 'var(--card-shadow)',
+    backdropFilter: 'blur(24px)',
+    WebkitBackdropFilter: 'blur(24px)',
+  } as const
+
+  const ICON_CIRCLE = {
+    background: 'linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.05))',
+    border: '0.5px solid rgba(255,255,255,0.20)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
+  } as const
+
   return (
-    <main className="min-h-screen pb-24">
-      {/* Header */}
-      <div className="px-5 pt-14 pb-2 flex items-center justify-between">
-        <h1 className="text-white text-base font-medium">{formattedToday()}</h1>
-        <form action={signOut}>
-          <button type="submit" className="text-xs transition-colors" style={{ color: '#7A7A86' }}>
-            Sign out
-          </button>
-        </form>
-      </div>
+    <main className="min-h-screen relative" style={{ background: 'var(--bg)', overflow: 'clip', paddingBottom: 90 }}>
+      {/* Background orbs */}
+      <div style={{ position: 'absolute', zIndex: 0, width: 300, height: 300, borderRadius: '50%', background: 'var(--orb1-color)', opacity: 0.60, filter: 'blur(90px)', top: -90, left: -80, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', zIndex: 0, width: 240, height: 240, borderRadius: '50%', background: 'var(--orb2-color)', opacity: 0.45, filter: 'blur(75px)', top: 140, right: -70, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', zIndex: 0, width: 240, height: 240, borderRadius: '50%', background: 'var(--orb3-color)', opacity: 0.25, filter: 'blur(100px)', bottom: 60, left: -20, pointerEvents: 'none' }} />
 
-      {/* Week strip */}
-      <WeekStrip
-        habitByDate={habitByDate}
-        sleepByDate={sleepByDate}
-        habitNames={habitNames}
-        totalHabits={totalHabits}
-      />
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        {/* Header */}
+        <div className="px-5 pt-14 pb-2 flex items-center justify-between">
+          <h1 className="text-white text-base font-medium">{formattedToday()}</h1>
+          <form action={signOut}>
+            <button type="submit" className="text-xs transition-colors" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              Sign out
+            </button>
+          </form>
+        </div>
 
-      {/* Big concentric rings */}
-      <div className="flex flex-col items-center mt-10">
-        <ActivityRings
-          size={210}
-          strokeWidth={18}
-          gap={10}
-          rings={[
-            { progress: habitProgress, color: 'var(--char-accent)', trackColor: '#1C1C22' },
-            { progress: sleepProgress, color: '#5AC8FA',            trackColor: '#161620' },
-          ]}
-        >
-          <div className="text-center">
-            <p className="text-white text-3xl font-bold leading-none">
-              {todayDone}
-              <span className="text-xl font-medium" style={{ color: '#7A7A86' }}>/{totalHabits}</span>
-            </p>
-            <p className="text-[11px] mt-1" style={{ color: '#7A7A86' }}>habits</p>
-            <p className="mt-2 font-semibold leading-none" style={{ color: '#5AC8FA', fontSize: 15 }}>
-              {sleepHrs > 0 ? formatSleepHrs(sleepHrs) : '—'}
-            </p>
-            <p className="text-[11px] mt-0.5" style={{ color: '#7A7A86' }}>sleep</p>
-          </div>
-        </ActivityRings>
-
-        <p className="mt-3 text-sm" style={{ color: '#7A7A86' }}>{character.name}</p>
-        {streak > 0 && (
-          <p className="mt-1 text-xs font-medium" style={{ color: 'var(--char-accent)' }}>🔥 {streak}-day streak</p>
-        )}
-      </div>
-
-      {/* Metric cards */}
-      <div className="px-5 mt-8 flex flex-col gap-2.5">
-        <Link href="/log/habits" className="glass rounded-2xl px-5 py-4 flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium" style={{ color: 'var(--char-accent)' }}>Habits</p>
-            <p className="text-white text-3xl font-bold mt-1 leading-none">
-              {todayDone}
-              <span className="text-lg font-medium" style={{ color: '#7A7A86' }}>/{totalHabits}</span>
-            </p>
-            {totalHabits === 0 && <p className="text-xs mt-1" style={{ color: '#7A7A86' }}>Tap to set up your habits</p>}
-          </div>
-          <div className="w-9 h-9 rounded-full flex items-center justify-center"
-            style={{ background: 'var(--char-accent10)' }}>
-            <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-              <path d="M2 9l4.5 4.5L16 4" strokeWidth="2"
-                strokeLinecap="round" strokeLinejoin="round"
-                style={{ stroke: 'var(--char-accent)' }} />
-            </svg>
-          </div>
-        </Link>
-
-        <Link href="/log/sleep" className="glass rounded-2xl px-5 py-4 flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium" style={{ color: '#5AC8FA' }}>Sleep</p>
-            {sleepHrs > 0 ? (
-              <>
-                <p className="text-white text-3xl font-bold mt-1 leading-none">
-                  {formatSleepHrs(sleepHrs)}
-                </p>
-                <p className="text-xs mt-1" style={{ color: '#7A7A86' }}>
-                  Quality {lastSleep?.quality}/5 · {sleepHrs >= 8 ? 'Goal hit' : `${formatSleepHrs(8 - sleepHrs)} short`}
-                </p>
-              </>
-            ) : (
-              <p className="text-sm mt-1" style={{ color: '#7A7A86' }}>Log last night&apos;s sleep</p>
-            )}
-          </div>
-          <div className="w-9 h-9 rounded-full flex items-center justify-center"
-            style={{ background: '#5AC8FA15' }}>
-            <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-              <path d="M15.5 9.66A7.5 7.5 0 1 1 8.34 2.5 5.5 5.5 0 0 0 15.5 9.66z"
-                stroke="#5AC8FA" strokeWidth="1.6" strokeLinecap="round" />
-            </svg>
-          </div>
-        </Link>
-
-        <MoodQuickLog
-          userId={user.id}
-          date={today}
-          initialMood={todayMood}
+        {/* Week strip */}
+        <WeekStrip
+          habitByDate={habitByDate}
+          sleepByDate={sleepByDate}
+          habitNames={habitNames}
+          totalHabits={totalHabits}
         />
-      </div>
 
-      {/* Quick links */}
-      <div className="px-5 mt-2.5 flex gap-2">
-        <Link href="/certificate"
-          className="glass flex-1 rounded-2xl py-3 text-center text-xs font-medium"
-          style={{ color: '#7A7A86' }}>
-          Certificate
-        </Link>
-        {isPremium ? (
-          <div className="glass flex-1 rounded-2xl py-3 text-center text-xs font-medium"
-            style={{ color: 'var(--char-accent)' }}>
-            Premium ✓
+        {/* Big concentric rings */}
+        <div className="flex flex-col items-center mt-10">
+          <div style={{ position: 'relative', width: 210, height: 210 }}>
+            {/* Circular glass plate behind rings */}
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(255,255,255,0.07), rgba(255,255,255,0.02))',
+              border: '0.5px solid rgba(255,255,255,0.12)',
+              boxShadow: '0 24px 80px rgba(0,0,0,0.70), 0 8px 32px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.10)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+            }} />
+            <ActivityRings
+              size={210}
+              strokeWidth={18}
+              gap={10}
+              centerBg="var(--bg)"
+              rings={[
+                { progress: habitProgress, color: 'var(--ring-done-1)', trackColor: 'rgba(255,255,255,0.06)' },
+                { progress: sleepProgress, color: 'var(--ring-done-4)', trackColor: 'rgba(255,255,255,0.06)' },
+              ]}
+            >
+              <div className="text-center">
+                <p className="text-white text-3xl font-bold leading-none">
+                  {todayDone}
+                  <span className="text-xl font-medium" style={{ color: 'rgba(255,255,255,0.35)' }}>/{totalHabits}</span>
+                </p>
+                <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.38)' }}>habits</p>
+                <p className="mt-2 font-semibold leading-none" style={{ color: 'var(--accent)', fontSize: 15 }}>
+                  {sleepHrs > 0 ? formatSleepHrs(sleepHrs) : '—'}
+                </p>
+                <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.38)' }}>sleep</p>
+              </div>
+            </ActivityRings>
           </div>
-        ) : (
-          <Link href="/upgrade"
-            className="glass flex-1 rounded-2xl py-3 text-center text-xs font-medium"
-            style={{ color: 'var(--char-accent)' }}>
-            Go Premium
+
+          <p className="mt-3 text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>{character.name}</p>
+          {streak > 0 && (
+            <p className="mt-1 text-xs font-medium" style={{ color: 'var(--accent)' }}>🔥 {streak}-day streak</p>
+          )}
+        </div>
+
+        {/* Metric cards */}
+        <div className="px-5 mt-8 flex flex-col gap-2.5">
+          <Link href="/log/habits" className="rounded-[18px] px-5 py-4 flex items-center justify-between" style={CARD_STYLE}>
+            <div>
+              <p className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Habits</p>
+              <p className="text-white text-3xl font-bold mt-1 leading-none">
+                {todayDone}
+                <span className="text-lg font-medium" style={{ color: 'rgba(255,255,255,0.35)' }}>/{totalHabits}</span>
+              </p>
+              {totalHabits === 0 && <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.35)' }}>Tap to set up your habits</p>}
+            </div>
+            <div className="w-9 h-9 rounded-full flex items-center justify-center" style={ICON_CIRCLE}>
+              <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+                <path d="M2 9l4.5 4.5L16 4" strokeWidth="2"
+                  strokeLinecap="round" strokeLinejoin="round" stroke="var(--accent)" />
+              </svg>
+            </div>
           </Link>
-        )}
+
+          <Link href="/log/sleep" className="rounded-[18px] px-5 py-4 flex items-center justify-between" style={CARD_STYLE}>
+            <div>
+              <p className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Sleep</p>
+              {sleepHrs > 0 ? (
+                <>
+                  <p className="text-white text-3xl font-bold mt-1 leading-none">
+                    {formatSleepHrs(sleepHrs)}
+                  </p>
+                  <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                    Quality {lastSleep?.quality}/5 · {sleepHrs >= 8 ? 'Goal hit' : `${formatSleepHrs(8 - sleepHrs)} short`}
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.35)' }}>Log last night&apos;s sleep</p>
+              )}
+            </div>
+            <div className="w-9 h-9 rounded-full flex items-center justify-center" style={ICON_CIRCLE}>
+              <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+                <path d="M15.5 9.66A7.5 7.5 0 1 1 8.34 2.5 5.5 5.5 0 0 0 15.5 9.66z"
+                  stroke="var(--accent)" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
+            </div>
+          </Link>
+
+          <MoodQuickLog
+            userId={user.id}
+            date={today}
+            initialMood={todayMood}
+          />
+        </div>
+
+        {/* Quick links */}
+        <div className="px-5 mt-2.5 flex gap-2">
+          <Link href="/certificate"
+            className="flex-1 rounded-2xl py-3 text-center text-xs font-medium"
+            style={{ ...CARD_STYLE, color: 'rgba(255,255,255,0.45)' }}>
+            Certificate
+          </Link>
+          {isPremium ? (
+            <div className="flex-1 rounded-2xl py-3 text-center text-xs font-medium"
+              style={{ ...CARD_STYLE, color: 'var(--accent)' }}>
+              Premium ✓
+            </div>
+          ) : (
+            <Link href="/upgrade"
+              className="flex-1 rounded-2xl py-3 text-center text-xs font-medium"
+              style={{ ...CARD_STYLE, color: 'var(--accent)' }}>
+              Go Premium
+            </Link>
+          )}
+        </div>
       </div>
 
       <BottomNav />

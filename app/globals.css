@@ -15,6 +15,30 @@
   --char-orb2:     rgba(90,200,250,0.11);
   --char-orb3:     rgba(191,90,242,0.06);
 
+  /* ── Today screen variables ────────────────────────────────────────────── */
+  --orb1-color:    hsl(var(--hue), 60%, 62%);
+  --orb2-color:    hsl(var(--hue), 55%, 48%);
+  --orb3-color:    hsl(var(--hue), 50%, 72%);
+
+  --ring-done-1:   hsl(var(--hue), 100%, 100%);
+  --ring-done-2:   hsl(var(--hue), 80%,  94%);
+  --ring-done-3:   hsl(var(--hue), 75%,  87%);
+  --ring-done-4:   hsl(var(--hue), 70%,  80%);
+  --ring-done-5:   hsl(var(--hue), 65%,  68%);
+  --ring-missed:   hsla(var(--hue), 50%, 35%, 0.18);
+  --ring-future:   hsla(var(--hue), 30%, 80%, 0.03);
+
+  --accent-soft:   hsl(var(--hue), 60%, 70%);
+
+  --card-bg:       linear-gradient(145deg, hsla(var(--hue), 30%, 100%, 0.11), hsla(var(--hue), 30%, 100%, 0.04));
+  --card-border-t: hsla(0, 0%, 100%, 0.24);
+  --card-border-l: hsla(0, 0%, 100%, 0.16);
+  --card-border-r: hsla(0, 0%, 100%, 0.04);
+  --card-shadow:   0 12px 40px rgba(0,0,0,0.55), 0 4px 12px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12);
+
+  --pill-bg:       linear-gradient(135deg, rgba(255,255,255,0.16), rgba(255,255,255,0.06));
+  --pill-shadow:   0 4px 16px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.15);
+
   /* ── Theme palette ─────────────────────────────────────────────────────────
      Change --hue to shift the entire app color theme:
        245 = indigo/purple (default)

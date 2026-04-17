@@ -103,28 +103,42 @@ export function WeekStrip({ habitByDate, sleepByDate, habitNames, totalHabits }:
               const rings = (
                 <div className="flex flex-col items-center gap-1.5">
                   <span className="text-[10px] font-medium"
-                    style={{ color: isFuture ? '#2C2C2E' : isToday ? '#ffffff' : '#5A5A68' }}>
+                    style={{ color: isFuture ? 'rgba(255,255,255,0.15)' : isToday ? '#ffffff' : 'rgba(255,255,255,0.45)' }}>
                     {dayLetter(date)}
                   </span>
-                  <div className="relative" style={{ width: 32, height: 32 }}>
+                  <div className="relative" style={{
+                    width: 32, height: 32,
+                    borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: isToday
+                      ? '0.5px solid rgba(255,255,255,0.28)'
+                      : '0.5px solid rgba(255,255,255,0.10)',
+                    boxShadow: isToday
+                      ? '0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15)'
+                      : '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)',
+                  }}>
                     <svg width={32} height={32} style={{ transform: 'rotate(-90deg)' }}>
+                      {/* Habit ring track */}
                       <circle cx={16} cy={16} r={13} fill="none"
-                        stroke={isFuture ? '#111114' : '#1A1A1A'} strokeWidth={3.5} />
+                        stroke="rgba(255,255,255,0.07)" strokeWidth={3.5} />
                       {!isFuture && (
                         <circle cx={16} cy={16} r={13} fill="none" strokeWidth={3.5}
                           strokeLinecap="round"
                           strokeDasharray={2 * Math.PI * 13}
                           strokeDashoffset={2 * Math.PI * 13 * (1 - habitPct)}
-                          style={{ stroke: 'var(--char-accent)', opacity: habitPct > 0 ? 1 : 0.25 }}
+                          stroke="var(--ring-done-1)"
+                          style={{ opacity: habitPct > 0 ? 1 : 0.25 }}
                         />
                       )}
+                      {/* Sleep ring track */}
                       <circle cx={16} cy={16} r={7.5} fill="none"
-                        stroke={isFuture ? '#0C0C10' : '#111'} strokeWidth={3.5} />
+                        stroke="rgba(255,255,255,0.07)" strokeWidth={3.5} />
                       {!isFuture && (
-                        <circle cx={16} cy={16} r={7.5} fill="none" stroke="#5AC8FA" strokeWidth={3.5}
+                        <circle cx={16} cy={16} r={7.5} fill="none" strokeWidth={3.5}
                           strokeLinecap="round"
                           strokeDasharray={2 * Math.PI * 7.5}
                           strokeDashoffset={2 * Math.PI * 7.5 * (1 - sleepPct)}
+                          stroke="var(--ring-done-4)"
                           style={{ opacity: sleepPct > 0 ? 1 : 0.25 }}
                         />
                       )}
@@ -135,7 +149,7 @@ export function WeekStrip({ habitByDate, sleepByDate, habitNames, totalHabits }:
                       </div>
                     ) : !isFuture ? (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-[8px]" style={{ color: '#3A3A48' }}>{dayNum(date)}</span>
+                        <span className="text-[8px]" style={{ color: 'rgba(255,255,255,0.45)' }}>{dayNum(date)}</span>
                       </div>
                     ) : null}
                   </div>
