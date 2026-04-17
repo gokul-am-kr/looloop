@@ -11,14 +11,12 @@ const RING_H    = 11
 const RING_GAP  = 2
 const DAY_INSET = 0.4    // angular inset each side → visible gap between tiles
 const R_START   = 29
-const R_LABEL   = 18
 const FAN_START = 100
 const FAN_END   = 260
 const FAN_SPAN  = FAN_END - FAN_START
 
 const MARGIN_L  = 17
 const MARGIN_T  = 17
-const MARGIN_B  = 8
 const LABEL_W   = 45
 
 
@@ -72,21 +70,7 @@ function segPath(cx: number, cy: number, r1: number, r2: number, a1: number, a2:
   )
 }
 
-// Arc segment with straight start (tile end) and rounded far end
-// startAngle > endAngle (decreasing — sweeps into label gap)
-function labelChipPath(cx: number, cy: number, r1: number, r2: number, startAngle: number, endAngle: number) {
-  const capR = (r2 - r1) / 2
-  const [ax, ay] = toXY(cx, cy, r1, startAngle)  // inner, tile end
-  const [bx, by] = toXY(cx, cy, r1, endAngle)    // inner, far end
-  const [ex, ey] = toXY(cx, cy, r2, endAngle)    // outer, far end
-  const [dx, dy] = toXY(cx, cy, r2, startAngle)  // outer, tile end
-  return (
-    `M ${ax.toFixed(2)} ${ay.toFixed(2)} ` +
-    `A ${r1} ${r1} 0 0 1 ${bx.toFixed(2)} ${by.toFixed(2)} ` +
-    `A ${capR.toFixed(2)} ${capR.toFixed(2)} 0 1 0 ${ex.toFixed(2)} ${ey.toFixed(2)} ` +
-    `A ${r2} ${r2} 0 0 0 ${dx.toFixed(2)} ${dy.toFixed(2)} Z`
-  )
-}
+
 
 function mkDate(y: number, m: number, d: number) {
   return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
