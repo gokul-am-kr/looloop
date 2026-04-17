@@ -105,7 +105,7 @@ export default function UpgradePage() {
   }
 
   return (
-    <main className="min-h-screen pb-28">
+    <main className="min-h-screen pb-36">
       <div className="px-5 pt-14 mb-8">
         <h1 className="text-white text-2xl font-bold">Go Premium</h1>
         <p className="text-sm mt-1" style={{ color: '#7A7A86' }}>Unlock the full Looloop experience.</p>

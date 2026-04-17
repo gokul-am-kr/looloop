@@ -78,7 +78,7 @@ export default function CertificatePage() {
   const progressPct   = Math.round((daysLogged / 90) * 100)
 
   return (
-    <main className="min-h-screen pb-28">
+    <main className="min-h-screen pb-36">
       <div className="px-5 pt-14">
         <h1 className="text-white text-2xl font-bold">Your Certificate</h1>
         <p className="text-muted text-sm mt-1">

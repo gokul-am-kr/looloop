@@ -192,7 +192,7 @@ export default function SummaryPage() {
     : 0
 
   return (
-    <main className="min-h-screen pb-28 relative" style={{ background: 'var(--bg)', overflow: 'clip' }}>
+    <main className="min-h-screen pb-36 relative" style={{ background: 'var(--bg)', overflow: 'clip' }}>
       {/* Background orbs */}
       <div style={{ position: 'absolute', zIndex: 0, width: 300, height: 300, borderRadius: '50%', background: 'var(--orb1)', opacity: 0.65, filter: 'blur(90px)', top: -90, left: -80, pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', zIndex: 0, width: 240, height: 240, borderRadius: '50%', background: 'var(--orb2)', opacity: 0.50, filter: 'blur(75px)', top: 140, right: -70, pointerEvents: 'none' }} />

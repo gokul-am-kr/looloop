@@ -210,7 +210,7 @@ function SleepContent() {
     const dur = getDurationLabel(editEntry.bedtime, editEntry.wake_time)
 
     return (
-      <main className="min-h-screen pb-24">
+      <main className="min-h-screen pb-36">
         {/* Header */}
         <div className="px-5 pt-14 flex items-center gap-4">
           <button onClick={() => dateParam ? router.back() : setMode('chart')} className="text-muted hover:text-white">
@@ -301,7 +301,7 @@ function SleepContent() {
 
   // ── Chart view ────────────────────────────────────────────────────────────
   return (
-    <main className="min-h-screen pb-24">
+    <main className="min-h-screen pb-36">
       {/* Header */}
       <div className="px-5 pt-14 flex items-baseline justify-between">
         <h1 className="text-2xl font-bold text-white">Sleep</h1>

@@ -184,7 +184,7 @@ function HabitsContent() {
   if (mode === 'setup' || mode === 'edit') {
     const isSetup = mode === 'setup'
     return (
-      <main className="min-h-screen px-5 pt-14 pb-28">
+      <main className="min-h-screen px-5 pt-14 pb-36">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-white text-2xl font-bold">
@@ -265,7 +265,7 @@ function HabitsContent() {
     })
 
     return (
-      <main className="min-h-screen pb-28">
+      <main className="min-h-screen pb-36">
         <div className="px-5 pt-14 flex items-center gap-3 mb-6">
           <button onClick={() => router.back()} style={{ color: '#7A7A86' }}>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -299,7 +299,7 @@ function HabitsContent() {
 
   // ── Daily log ──────────────────────────────────────────────────────────────
   return (
-    <main className="min-h-screen pb-28">
+    <main className="min-h-screen pb-36">
       {/* Header */}
       <div className="px-5 pt-14 flex items-center justify-between">
         <h1 className="text-white text-2xl font-bold">Habits</h1>

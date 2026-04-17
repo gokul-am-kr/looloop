@@ -117,7 +117,7 @@ export default async function DashboardPage() {
   } as const
 
   return (
-    <main className="min-h-screen relative" style={{ background: 'var(--bg)', overflow: 'clip', paddingBottom: 90 }}>
+    <main className="min-h-screen relative" style={{ background: 'var(--bg)', overflow: 'clip', paddingBottom: 140 }}>
       {/* Background orbs */}
       <div style={{ position: 'absolute', zIndex: 0, width: 300, height: 300, borderRadius: '50%', background: 'var(--orb1-color)', opacity: 0.60, filter: 'blur(90px)', top: -90, left: -80, pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', zIndex: 0, width: 240, height: 240, borderRadius: '50%', background: 'var(--orb2-color)', opacity: 0.45, filter: 'blur(75px)', top: 140, right: -70, pointerEvents: 'none' }} />
@@ -143,12 +143,13 @@ export default async function DashboardPage() {
         />
 
         {/* Big concentric rings */}
-        <div className="flex flex-col items-center mt-10">
-          <div style={{ position: 'relative', width: '85%', maxWidth: 320, aspectRatio: '1', margin: '0 auto', filter: 'drop-shadow(0 20px 60px rgba(0,0,0,0.70)) drop-shadow(0 0 30px hsla(var(--hue),60%,60%,0.15))' }}>
-            {/* Circular glass plate behind rings */}
+        <div className="flex flex-col items-center mt-8">
+          {/* Drop-shadow wrapper */}
+          <div style={{ filter: 'drop-shadow(0 24px 64px rgba(0,0,0,0.75)) drop-shadow(0 0 32px hsla(var(--hue),60%,60%,0.14))' }}>
+            {/* Circular glass card */}
             <div style={{
-              position: 'absolute',
-              inset: 0,
+              width: 290,
+              height: 290,
               borderRadius: '50%',
               background: 'radial-gradient(circle at 40% 35%, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.05) 40%, rgba(255,255,255,0.01) 100%)',
               borderTop: '0.5px solid rgba(255,255,255,0.22)',
@@ -158,29 +159,36 @@ export default async function DashboardPage() {
               boxShadow: '0 32px 80px rgba(0,0,0,0.80), 0 12px 40px rgba(0,0,0,0.60), 0 4px 12px rgba(0,0,0,0.40), inset 0 2px 0 rgba(255,255,255,0.12), inset 0 -2px 0 rgba(0,0,0,0.30), 0 0 60px hsla(var(--hue),60%,60%,0.12)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
-            }} />
-            <ActivityRings
-              size={210}
-              strokeWidth={18}
-              gap={10}
-              centerBg="hsl(var(--hue),45%,5%)"
-              rings={[
-                { progress: habitProgress, color: 'var(--ring-done-1)', trackColor: 'rgba(255,255,255,0.05)', glowBlur: 24 },
-                { progress: sleepProgress, color: 'var(--ring-done-4)', trackColor: 'rgba(255,255,255,0.05)', glowBlur: 18 },
-              ]}
-            >
-              <div className="text-center">
-                <p className="text-white text-3xl font-bold leading-none">
-                  {todayDone}
-                  <span className="text-xl font-medium" style={{ color: 'rgba(255,255,255,0.35)' }}>/{totalHabits}</span>
-                </p>
-                <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.38)' }}>habits</p>
-                <p className="mt-2 font-semibold leading-none" style={{ color: 'var(--accent)', fontSize: 15 }}>
-                  {sleepHrs > 0 ? formatSleepHrs(sleepHrs) : '—'}
-                </p>
-                <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.38)' }}>sleep</p>
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              {/* Ring — smaller, floats inside the card */}
+              <div style={{ width: 220, height: 220 }}>
+                <ActivityRings
+                  size={210}
+                  strokeWidth={9}
+                  gap={12}
+                  centerBg="hsl(var(--hue),45%,5%)"
+                  rings={[
+                    { progress: habitProgress, color: 'var(--ring-done-1)', trackColor: 'rgba(255,255,255,0.04)', glowBlur: 10 },
+                    { progress: sleepProgress, color: 'var(--ring-done-4)', trackColor: 'rgba(255,255,255,0.04)', glowBlur: 7 },
+                  ]}
+                >
+                  <div className="text-center">
+                    <p className="text-white text-3xl font-bold leading-none">
+                      {todayDone}
+                      <span className="text-xl font-medium" style={{ color: 'rgba(255,255,255,0.35)' }}>/{totalHabits}</span>
+                    </p>
+                    <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.38)' }}>habits</p>
+                    <p className="mt-2 font-semibold leading-none" style={{ color: 'var(--accent)', fontSize: 15 }}>
+                      {sleepHrs > 0 ? formatSleepHrs(sleepHrs) : '—'}
+                    </p>
+                    <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.38)' }}>sleep</p>
+                  </div>
+                </ActivityRings>
               </div>
-            </ActivityRings>
+            </div>
           </div>
 
           <p className="mt-3 text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>{character.name}</p>

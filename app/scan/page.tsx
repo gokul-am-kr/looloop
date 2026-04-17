@@ -71,7 +71,7 @@ export default function ScanPage() {
   }
 
   return (
-    <main className="min-h-screen pb-28">
+    <main className="min-h-screen pb-36">
       {/* Header */}
       <div className="px-5 pt-14">
         <p className="text-muted text-xs font-semibold uppercase tracking-widest">Looloop</p>

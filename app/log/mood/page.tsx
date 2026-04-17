@@ -79,7 +79,7 @@ function MoodLogContent() {
   }
 
   return (
-    <main className="min-h-screen pb-28">
+    <main className="min-h-screen pb-36">
       {/* Header */}
       <div className="px-5 pt-14 flex items-center gap-3 mb-8">
         <button onClick={() => router.back()} style={{ color: '#7A7A86' }}>

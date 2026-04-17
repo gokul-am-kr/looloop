@@ -196,7 +196,7 @@ function WeekContent() {
   const bestSleep = sleepDurs.length > 0 ? Math.max(...sleepDurs) : 0
 
   return (
-    <main className="min-h-screen pb-28">
+    <main className="min-h-screen pb-36">
 
       {/* ── Header ── */}
       <div className="px-4 pt-12 flex items-center gap-2">

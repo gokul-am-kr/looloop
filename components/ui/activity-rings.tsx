@@ -41,10 +41,17 @@ export function ActivityRings({
             </linearGradient>
           ))}
           {rings.map((ring, i) => ring.glowBlur !== undefined && (
-            <filter key={i} id={`ringGlow${i}`} x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation={ring.glowBlur / 4} in="SourceGraphic" result="blur" />
+            <filter key={i} id={`ringGlow${i}`} x="-60%" y="-60%" width="220%" height="220%">
+              {/* Dark shadow — blurred alpha of the arc */}
+              <feGaussianBlur stdDeviation="7" in="SourceAlpha" result="shadowBlur" />
+              <feFlood floodColor="#000000" floodOpacity="0.92" result="shadowColor" />
+              <feComposite in="shadowColor" in2="shadowBlur" operator="in" result="shadow" />
+              {/* Color glow */}
+              <feGaussianBlur stdDeviation={ring.glowBlur / 4} in="SourceGraphic" result="glow" />
+              {/* Layer: shadow → glow → sharp arc */}
               <feMerge>
-                <feMergeNode in="blur" />
+                <feMergeNode in="shadow" />
+                <feMergeNode in="glow" />
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
