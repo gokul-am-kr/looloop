@@ -14,6 +14,42 @@
   --char-orb1:     rgba(255,107,53,0.13);
   --char-orb2:     rgba(90,200,250,0.11);
   --char-orb3:     rgba(191,90,242,0.06);
+
+  /* ── Theme palette ─────────────────────────────────────────────────────────
+     Change --hue to shift the entire app color theme:
+       245 = indigo/purple (default)
+       200 = teal/cyan
+       160 = green
+        30 = amber/orange
+       350 = pink/rose
+       220 = blue
+  */
+  --hue:         245;
+
+  --bg:          hsl(var(--hue), 45%, 8%);
+  --orb1:        hsl(var(--hue), 60%, 65%);
+  --orb2:        hsl(var(--hue), 55%, 50%);
+  --orb3:        hsl(var(--hue), 50%, 75%);
+
+  /* Done ring segment colors (innermost → outermost) */
+  --done-1:      hsl(var(--hue), 100%, 100%);
+  --done-2:      hsl(var(--hue), 80%,  93%);
+  --done-3:      hsl(var(--hue), 75%,  87%);
+  --done-4:      hsl(var(--hue), 70%,  80%);
+  --done-5:      hsl(var(--hue), 65%,  68%);
+
+  /* Semantic */
+  --missed:      hsla(var(--hue), 50%, 35%, 0.25);
+  --accent:      hsl(var(--hue),  60%, 80%);
+  --label:       hsl(var(--hue),  50%, 78%);
+
+  /* Opacity variants — for use in color, box-shadow, filter, text-shadow */
+  --label-90:    hsla(var(--hue), 50%, 78%, 0.90);
+  --label-45:    hsla(var(--hue), 50%, 78%, 0.45);
+  --label-30:    hsla(var(--hue), 50%, 78%, 0.30);
+  --accent-glow: hsla(var(--hue), 60%, 80%, 0.18);
+  --orb2-glow:   hsla(var(--hue), 55%, 50%, 0.15);
+  --missed-dot:  hsla(var(--hue), 60%, 65%, 0.45);
 }
 
 * {

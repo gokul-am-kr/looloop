@@ -19,11 +19,11 @@ const FAN_END   = FAN_START + FAN_SPAN        // ≈ 444.85°
 const MARGIN    = 14   // margin around full ring
 const NUM_INSET = 12   // offset for day-number labels past ring edge
 
-// Segment colours — per-ring (innermost = white, outermost = deepest purple)
-const RING_DONE_HEX  = ['#ffffff', '#ebe9ff', '#d2cefa', '#b9b4f2', '#918ae1']
-const MISSED_COLOR   = 'rgba(60,52,140,0.25)'
+// Segment colours — per-ring (innermost = white, outermost = deepest hue)
+const RING_DONE_HEX  = ['var(--done-1)', 'var(--done-2)', 'var(--done-3)', 'var(--done-4)', 'var(--done-5)']
+const MISSED_COLOR   = 'var(--missed)'
 const FUTURE_COLOR   = 'rgba(255,255,255,0.04)'
-const PARTICLE_COLOR = '#AFA9EC'
+const PARTICLE_COLOR = 'var(--accent)'
 
 function getRingColor(hi: number): string {
   return RING_DONE_HEX[Math.min(hi, RING_DONE_HEX.length - 1)]
@@ -142,13 +142,13 @@ export function RadialHabitChart({ habitNames, habitByDate, year, month, edition
           borderRadius: '50%',
           background: 'radial-gradient(circle at center, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0.01) 100%)',
           border: '0.5px solid rgba(255,255,255,0.12)',
-          boxShadow: '0 24px 80px rgba(0,0,0,0.70), 0 8px 32px rgba(0,0,0,0.50), 0 2px 8px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.10), inset 0 -1px 0 rgba(0,0,0,0.20), 0 0 60px rgba(83,74,183,0.15)',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.70), 0 8px 32px rgba(0,0,0,0.50), 0 2px 8px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.10), inset 0 -1px 0 rgba(0,0,0,0.20), 0 0 60px var(--orb2-glow)',
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
         }} />
 
         {/* ── SVG ring chart (above glass plate) ── */}
-        <div style={{ filter: 'drop-shadow(0 0 20px rgba(175,169,236,0.18))', position: 'relative' }}>
+        <div style={{ filter: 'drop-shadow(0 0 20px var(--accent-glow))', position: 'relative' }}>
         <svg
           key={`${year}-${month}`}
           viewBox={`0 0 ${vbSize} ${vbSize}`}
@@ -333,7 +333,7 @@ export function RadialHabitChart({ habitNames, habitByDate, year, month, edition
       <div className="flex items-center gap-5 mt-3 px-1">
         {([
           { label: 'Done',   dotStyle: { background: '#ffffff', boxShadow: '0 0 10px rgba(255,255,255,0.8), 0 0 4px #fff' } },
-          { label: 'Missed', dotStyle: { background: 'rgba(127,119,221,0.45)', boxShadow: '0 0 4px rgba(127,119,221,0.3)' } },
+          { label: 'Missed', dotStyle: { background: 'var(--missed-dot)', boxShadow: '0 0 4px hsla(var(--hue), 60%, 65%, 0.30)' } },
           { label: 'Future', dotStyle: { background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.20)' } },
         ]).map(({ label, dotStyle }) => (
           <div key={label} className="flex items-center gap-1.5">

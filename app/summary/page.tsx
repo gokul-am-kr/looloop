@@ -19,11 +19,11 @@ const CHAR_NAME:  Record<string, string> = {
 
 // Per-rank dot colors for habit list (rank 0 = highest completion = innermost ring)
 const HABIT_DOT_COLORS = [
-  { color: '#ffffff',  glow: '0 0 8px rgba(255,255,255,0.7), 0 0 3px rgba(255,255,255,0.7)' },
-  { color: '#ebe9ff',  glow: '0 0 8px rgba(235,233,255,0.7), 0 0 3px rgba(235,233,255,0.7)' },
-  { color: '#d2cefa',  glow: '0 0 8px rgba(210,206,250,0.7), 0 0 3px rgba(210,206,250,0.7)' },
-  { color: '#b9b4f2',  glow: '0 0 8px rgba(185,180,242,0.7), 0 0 3px rgba(185,180,242,0.7)' },
-  { color: '#918ae1',  glow: '0 0 8px rgba(145,138,225,0.7), 0 0 3px rgba(145,138,225,0.7)' },
+  { color: 'var(--done-1)', glow: '0 0 8px rgba(255,255,255,0.7), 0 0 3px rgba(255,255,255,0.7)' },
+  { color: 'var(--done-2)', glow: '0 0 8px hsla(var(--hue), 80%, 93%, 0.7), 0 0 3px hsla(var(--hue), 80%, 93%, 0.7)' },
+  { color: 'var(--done-3)', glow: '0 0 8px hsla(var(--hue), 75%, 87%, 0.7), 0 0 3px hsla(var(--hue), 75%, 87%, 0.7)' },
+  { color: 'var(--done-4)', glow: '0 0 8px hsla(var(--hue), 70%, 80%, 0.7), 0 0 3px hsla(var(--hue), 70%, 80%, 0.7)' },
+  { color: 'var(--done-5)', glow: '0 0 8px hsla(var(--hue), 65%, 68%, 0.7), 0 0 3px hsla(var(--hue), 65%, 68%, 0.7)' },
 ]
 
 const GLASS_CARD_STYLE = {
@@ -192,11 +192,11 @@ export default function SummaryPage() {
     : 0
 
   return (
-    <main className="min-h-screen pb-28 relative" style={{ background: '#07051a', overflow: 'clip' }}>
+    <main className="min-h-screen pb-28 relative" style={{ background: 'var(--bg)', overflow: 'clip' }}>
       {/* Background orbs */}
-      <div style={{ position: 'absolute', zIndex: 0, width: 300, height: 300, borderRadius: '50%', background: '#7F77DD', opacity: 0.65, filter: 'blur(90px)', top: -90, left: -80, pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', zIndex: 0, width: 240, height: 240, borderRadius: '50%', background: '#534AB7', opacity: 0.50, filter: 'blur(75px)', top: 140, right: -70, pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', zIndex: 0, width: 240, height: 240, borderRadius: '50%', background: '#AFA9EC', opacity: 0.30, filter: 'blur(100px)', bottom: 50, left: -20, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', zIndex: 0, width: 300, height: 300, borderRadius: '50%', background: 'var(--orb1)', opacity: 0.65, filter: 'blur(90px)', top: -90, left: -80, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', zIndex: 0, width: 240, height: 240, borderRadius: '50%', background: 'var(--orb2)', opacity: 0.50, filter: 'blur(75px)', top: 140, right: -70, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', zIndex: 0, width: 240, height: 240, borderRadius: '50%', background: 'var(--orb3)', opacity: 0.30, filter: 'blur(100px)', bottom: 50, left: -20, pointerEvents: 'none' }} />
 
       {/* ── Header — minimal, elegant ── */}
       <div className="px-5 pt-12 flex flex-col gap-4" style={{ position: 'relative', zIndex: 1 }}>
@@ -441,9 +441,9 @@ function StatCard({ label, value, sub, color: _color }: {
 }) {
   return (
     <div className="rounded-[20px] px-4 py-4" style={GLASS_CARD_STYLE}>
-      <p className="text-[10px] uppercase tracking-[0.08em] mb-1.5" style={{ color: 'rgba(175,169,236,0.90)' }}>{label}</p>
-      <p className="text-[26px] font-medium leading-none" style={{ color: '#ffffff', textShadow: '0 2px 12px rgba(175,169,236,0.30)' }}>{value}</p>
-      {sub && <p className="text-[10px] mt-1" style={{ color: 'rgba(175,169,236,0.45)' }}>{sub}</p>}
+      <p className="text-[10px] uppercase tracking-[0.08em] mb-1.5" style={{ color: 'var(--label-90)' }}>{label}</p>
+      <p className="text-[26px] font-medium leading-none" style={{ color: '#ffffff', textShadow: '0 2px 12px var(--label-30)' }}>{value}</p>
+      {sub && <p className="text-[10px] mt-1" style={{ color: 'var(--label-45)' }}>{sub}</p>}
     </div>
   )
 }
@@ -453,9 +453,9 @@ function PremiumStatCard({ label, value, sub, color: _color }: {
 }) {
   return (
     <div className="rounded-[20px] px-4 py-4" style={GLASS_CARD_STYLE}>
-      <p className="text-[10px] uppercase tracking-[0.08em] mb-1.5" style={{ color: 'rgba(175,169,236,0.90)' }}>{label}</p>
-      <p className="text-[26px] font-medium leading-none" style={{ color: '#ffffff', textShadow: '0 2px 12px rgba(175,169,236,0.30)' }}>{value}</p>
-      {sub && <p className="text-[10px] mt-1" style={{ color: 'rgba(175,169,236,0.45)' }}>{sub}</p>}
+      <p className="text-[10px] uppercase tracking-[0.08em] mb-1.5" style={{ color: 'var(--label-90)' }}>{label}</p>
+      <p className="text-[26px] font-medium leading-none" style={{ color: '#ffffff', textShadow: '0 2px 12px var(--label-30)' }}>{value}</p>
+      {sub && <p className="text-[10px] mt-1" style={{ color: 'var(--label-45)' }}>{sub}</p>}
     </div>
   )
 }

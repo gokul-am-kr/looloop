@@ -87,19 +87,24 @@ export function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[100]"
-      style={{ padding: '0 16px 16px' }}>
-      <div
-        className="flex justify-around items-center"
-        style={{
-          padding: '10px 20px 24px',
-          borderRadius: 24,
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%)',
-          border: '0.5px solid rgba(255,255,255,0.14)',
-          boxShadow: '0 -4px 24px rgba(0,0,0,0.40), 0 8px 32px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.15)',
-          backdropFilter: 'blur(28px)',
-          WebkitBackdropFilter: 'blur(28px)',
-        }}>
+    <div
+      className="z-[100] flex justify-between items-center gap-1"
+      style={{
+        position: 'fixed',
+        bottom: 16,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: 'auto',
+        minWidth: 320,
+        maxWidth: '90%',
+        padding: '10px 20px',
+        borderRadius: 24,
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%)',
+        border: '0.5px solid rgba(255,255,255,0.15)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.50), 0 2px 8px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.12)',
+        backdropFilter: 'blur(28px)',
+        WebkitBackdropFilter: 'blur(28px)',
+      }}>
         {tabs.map(({ href, label, icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/')
           if (active) {
@@ -132,7 +137,6 @@ export function BottomNav() {
             </Link>
           )
         })}
-      </div>
     </div>
   )
 }
