@@ -276,7 +276,6 @@ export default function SummaryPage() {
                   habitByDate={habitByDate}
                   year={year}
                   month={month}
-                  edition={edition}
                   onDayClick={(date) => router.push(`/log/habits?date=${date}`)}
                 />
               </div>

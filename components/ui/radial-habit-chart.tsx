@@ -28,9 +28,6 @@ function getRingColor(hi: number): string {
   return RING_DONE_HEX[Math.min(hi, RING_DONE_HEX.length - 1)]
 }
 
-const CHAR_EMOJI: Record<string, string> = {
-  mochi: '🐱', pico: '🌵', jelli: '🪼', inko: '🐙',
-}
 
 // Ambient particles distributed around the full circle
 // [radius-fraction, angle-deg, dot-size, anim-delay-s]
@@ -54,7 +51,6 @@ interface Props {
   habitByDate: Record<string, Record<string, boolean>>
   year: number
   month: number
-  edition: string
   onDayClick: (dateStr: string) => void
 }
 
@@ -85,7 +81,7 @@ function mkDate(y: number, m: number, d: number) {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function RadialHabitChart({ habitNames, habitByDate, year, month, edition, onDayClick }: Props) {
+export function RadialHabitChart({ habitNames, habitByDate, year, month, onDayClick }: Props) {
   const daysInMonth  = new Date(year, month + 1, 0).getDate()
   const now          = new Date()
   const isCurrentMon = now.getFullYear() === year && now.getMonth() === month
