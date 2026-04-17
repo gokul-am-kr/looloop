@@ -7,9 +7,10 @@ import { BottomNav } from '@/components/ui/bottom-nav'
 import { RadialHabitChart } from '@/components/ui/radial-habit-chart'
 import { RadialSleepChart } from '@/components/ui/radial-sleep-chart'
 import { RadialMoodChart, MOOD_LABELS, MOOD_EMOJI } from '@/components/ui/radial-mood-chart'
-import { SleepGarden } from '@/components/ui/sleep-garden'
 import { SleepScoreCard } from '@/components/ui/sleep-score-card'
 import { computeSleepScore } from '@/lib/sleep-score'
+import { palettes } from '@/lib/characters'
+import type { Edition } from '@/types'
 
 type Tab = 'habits' | 'sleep' | 'mood'
 
@@ -167,7 +168,7 @@ export default function SummaryPage() {
         <div className="flex items-center justify-between">
           <button onClick={prevMonth}
             className="w-8 h-8 flex items-center justify-center rounded-full transition-colors"
-            style={{ color: '#52525A' }}>
+            style={{ color: '#7A7A86' }}>
             <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
               <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="1.6"
                 strokeLinecap="round" strokeLinejoin="round" />
@@ -182,7 +183,7 @@ export default function SummaryPage() {
           <div className="flex items-center gap-1">
             <button onClick={nextMonth} disabled={isCurrentMonth}
               className="w-8 h-8 flex items-center justify-center rounded-full transition-colors"
-              style={{ color: isCurrentMonth ? '#2A2A32' : '#52525A' }}>
+              style={{ color: isCurrentMonth ? '#2A2A32' : '#7A7A86' }}>
               <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                 <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" strokeWidth="1.6"
                   strokeLinecap="round" strokeLinejoin="round" />
@@ -190,29 +191,51 @@ export default function SummaryPage() {
             </button>
             <button onClick={() => router.push('/summary/week')}
               className="text-[10px] px-2.5 py-1 rounded-lg font-medium tracking-wide"
-              style={{ background: 'rgba(255,255,255,0.05)', color: '#52525A', border: '1px solid rgba(255,255,255,0.06)' }}>
+              style={{ background: 'rgba(255,255,255,0.05)', color: '#7A7A86', border: '1px solid rgba(255,255,255,0.06)' }}>
               Weekly
             </button>
           </div>
         </div>
 
-        {/* Tab toggle — refined pill */}
-        <div className="flex rounded-2xl p-0.5" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-          {(['habits', 'sleep', 'mood'] as Tab[]).map(t => (
-            <button key={t} onClick={() => setTab(t)}
-              className="flex-1 py-2 text-xs font-semibold capitalize rounded-xl transition-all"
-              style={{
-                background: tab === t
-                  ? t === 'habits' ? 'var(--char-accent)'
-                  : t === 'sleep'  ? '#5AC8FA'
-                  : '#BF5AF2'
-                  : 'transparent',
-                color: tab === t ? (t === 'habits' ? '#000' : '#000') : '#3A3A44',
-                letterSpacing: '0.04em',
-              }}>
-              {t.charAt(0).toUpperCase() + t.slice(1)}
-            </button>
-          ))}
+        {/* Tab toggle — glassmorphism */}
+        <div className="flex gap-2 p-1.5 rounded-2xl"
+          style={{
+            background: 'rgba(255,255,255,0.04)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255,255,255,0.07)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 24px rgba(0,0,0,0.3)',
+          }}>
+          {(['habits', 'sleep', 'mood'] as Tab[]).map(t => {
+            const isActive = tab === t
+            const habitAccent = palettes[edition as Edition]?.accent ?? '#30D158'
+            const colors: Record<Tab, { accent: string; glow: string; text: string }> = {
+              habits: { accent: habitAccent, glow: `${habitAccent}44`, text: '#000' },
+              sleep:  { accent: '#5AC8FA',   glow: 'rgba(90,200,250,0.25)',  text: '#000' },
+              mood:   { accent: '#BF5AF2',   glow: 'rgba(191,90,242,0.25)',  text: '#fff' },
+            }
+            const { accent, glow, text } = colors[t]
+            return (
+              <button key={t} onClick={() => setTab(t)}
+                className="flex-1 py-2 text-xs font-semibold capitalize rounded-xl transition-all duration-200"
+                style={isActive ? {
+                  background: `linear-gradient(145deg, ${accent}cc, ${accent}99)`,
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  border: `1px solid ${accent}55`,
+                  boxShadow: `0 0 16px ${glow}, inset 0 1px 0 rgba(255,255,255,0.2)`,
+                  color: text,
+                  letterSpacing: '0.05em',
+                } : {
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  color: '#7A7A86',
+                  letterSpacing: '0.05em',
+                }}>
+                {t.charAt(0).toUpperCase() + t.slice(1)}
+              </button>
+            )
+          })}
         </div>
       </div>
 
@@ -222,15 +245,64 @@ export default function SummaryPage() {
         <>
           {/* Chart area */}
           {tab === 'habits' ? (
-            <div className="px-2 mt-2">
-              <RadialHabitChart
-                habitNames={habitNames}
-                habitByDate={habitByDate}
-                year={year}
-                month={month}
-                edition={edition}
-                onDayClick={(date) => router.push(`/log/habits?date=${date}`)}
-              />
+            <div className="flex flex-col">
+              {/* Fan chart — full width */}
+              <div className="px-2 mt-2">
+                <RadialHabitChart
+                  habitNames={habitNames}
+                  habitByDate={habitByDate}
+                  year={year}
+                  month={month}
+                  edition={edition}
+                  onDayClick={(date) => router.push(`/log/habits?date=${date}`)}
+                />
+              </div>
+
+              {/* Summary — below the chart */}
+              <div className="px-5 mt-4 flex flex-col gap-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <PremiumStatCard
+                    label="DAYS LOGGED"
+                    value={`${trackedDays}`}
+                    sub={`of ${todayDay} days`}
+                    color="var(--char-accent)"
+                  />
+                  <PremiumStatCard
+                    label="AVG DONE"
+                    value={`${avgCompletion}%`}
+                    sub="completion"
+                    color="var(--char-accent)"
+                  />
+                </div>
+                {habitNames.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    {[...habitNames]
+                      .sort((a, b) => {
+                        const pct = (h: string) => {
+                          if (todayDay === 0) return 0
+                          const done = Array.from({ length: todayDay }, (_, i) => i + 1).filter(d => {
+                            const ds = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+                            return habitByDate[ds]?.[h] ?? false
+                          }).length
+                          return done / todayDay
+                        }
+                        return pct(b) - pct(a)
+                      })
+                      .map(habit => (
+                        <HabitCard
+                          key={habit}
+                          habit={habit}
+                          year={year}
+                          month={month}
+                          daysInMonth={daysInMonth}
+                          todayDay={todayDay}
+                          habitByDate={habitByDate}
+                          onSelect={() => setSelectedHabit(habit)}
+                        />
+                      ))}
+                  </div>
+                )}
+              </div>
             </div>
           ) : tab === 'sleep' ? (
             <div className="px-3 mt-3 flex flex-col gap-4">
@@ -240,7 +312,6 @@ export default function SummaryPage() {
                 month={month}
                 onDayClick={(date) => router.push(`/log/sleep?date=${date}`)}
               />
-              <SleepGarden logs={sleepLogs} daysTotal={daysInMonth} />
             </div>
           ) : (
             <div className="px-3 mt-3">
@@ -255,26 +326,7 @@ export default function SummaryPage() {
           )}
 
           {/* Stats */}
-          {tab === 'habits' ? (
-            <>
-              {/* 2 glassmorphism stat cards */}
-              <div className="px-5 mt-5 grid grid-cols-2 gap-3">
-                <PremiumStatCard
-                  label="DAYS LOGGED"
-                  value={`${trackedDays}`}
-                  sub={`of ${todayDay} days`}
-                  color="var(--char-accent)"
-                />
-                <PremiumStatCard
-                  label="AVG COMPLETION"
-                  value={`${avgCompletion}%`}
-                  sub="of habits logged"
-                  color="var(--char-accent)"
-                />
-              </div>
-
-            </>
-          ) : tab === 'sleep' ? (
+          {tab === 'habits' ? null : tab === 'sleep' ? (
             <div className="px-5 mt-6 flex flex-col gap-4">
               <div className="grid grid-cols-2 gap-3">
                 <StatCard label="Avg sleep" value={avgSleep > 0 ? fmtHrs(avgSleep) : '—'}
@@ -338,6 +390,66 @@ export default function SummaryPage() {
   )
 }
 
+function HabitCard({
+  habit, year, month, daysInMonth, todayDay, habitByDate, onSelect,
+}: {
+  habit: string
+  year: number
+  month: number
+  daysInMonth: number
+  todayDay: number
+  habitByDate: Record<string, Record<string, boolean>>
+  onSelect: () => void
+}) {
+  const daysDone = Array.from({ length: todayDay }, (_, i) => i + 1).filter(d => {
+    const ds = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+    return habitByDate[ds]?.[habit] ?? false
+  }).length
+  const pct        = todayDay > 0 ? Math.round(daysDone / todayDay * 100) : 0
+  const bestStreak = computeHabitStreak(habit, habitByDate, year, month, daysInMonth, todayDay)
+
+  return (
+    <div onClick={onSelect} className="rounded-2xl px-4 py-3.5 relative overflow-hidden flex items-center gap-4 cursor-pointer active:scale-[0.98] transition-transform"
+      style={{
+        background: 'rgba(255,255,255,0.04)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        border: '1px solid rgba(255,255,255,0.07)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 12px rgba(0,0,0,0.25)',
+      }}
+    >
+      {/* Accent dot */}
+      <div className="w-2 h-2 rounded-full shrink-0"
+        style={{ background: 'var(--char-accent)', boxShadow: '0 0 6px var(--char-accent)' }} />
+
+      {/* Name + progress bar */}
+      <div className="flex-1">
+        <p className="text-sm font-medium text-white leading-tight">{habit}</p>
+        <div className="mt-1.5 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
+          <div className="h-full rounded-full transition-all duration-500"
+            style={{
+              width: `${pct}%`,
+              background: 'linear-gradient(90deg, var(--char-accent), color-mix(in srgb, var(--char-accent) 60%, white))',
+              boxShadow: '0 0 6px var(--char-accent)',
+            }} />
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="flex items-center gap-4 shrink-0">
+        <div className="text-center">
+          <p className="text-base font-bold leading-none" style={{ color: 'var(--char-accent)' }}>{pct}%</p>
+          <p className="text-[9px] mt-0.5 text-muted">{daysDone}/{todayDay}d</p>
+        </div>
+        <div className="text-center">
+          <p className="text-base font-bold leading-none text-white">{bestStreak}</p>
+          <p className="text-[9px] mt-0.5 text-muted">streak</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function StatCard({ label, value, sub, color }: {
   label: string; value: string; sub: string; color: string
 }) {
@@ -357,19 +469,26 @@ function PremiumStatCard({ label, value, sub, color }: {
     <div
       className="rounded-2xl px-4 py-4 relative overflow-hidden"
       style={{
-        background: 'rgba(14,14,20,0.72)',
-        backdropFilter: 'blur(24px) saturate(160%)',
-        WebkitBackdropFilter: 'blur(24px) saturate(160%)',
+        background: 'rgba(255,255,255,0.04)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
         border: '1px solid rgba(255,255,255,0.07)',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05)',
+        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(0,0,0,0.2), 0 0 20px ${color}18`,
       }}
     >
-      {/* subtle top-left glow pip */}
-      <div className="absolute top-0 left-0 w-16 h-16 rounded-full pointer-events-none"
-        style={{ background: `radial-gradient(circle, ${color} 0%, transparent 70%)`, opacity: 0.08 }} />
-      <p className="text-[9px] font-semibold tracking-widest uppercase" style={{ color: '#3A3A44' }}>{label}</p>
-      <p className="text-3xl font-bold mt-2 leading-none" style={{ color }}>{value}</p>
-      <p className="text-[10px] mt-1.5" style={{ color: '#52525A' }}>{sub}</p>
+      {/* Diagonal color wash */}
+      <div className="absolute inset-0 rounded-2xl pointer-events-none"
+        style={{ background: `linear-gradient(135deg, ${color}22 0%, transparent 55%)` }} />
+      {/* Top-left corner bloom */}
+      <div className="absolute -top-4 -left-4 w-20 h-20 rounded-full pointer-events-none"
+        style={{ background: `radial-gradient(circle, ${color} 0%, transparent 70%)`, opacity: 0.15 }} />
+      {/* Inner top-edge specular */}
+      <div className="absolute top-0 left-0 right-0 h-px rounded-t-2xl pointer-events-none"
+        style={{ background: 'linear-gradient(90deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04), transparent)' }} />
+      <p className="text-[9px] font-semibold tracking-widest uppercase relative" style={{ color: '#8E8E9A' }}>{label}</p>
+      <p className="text-3xl font-bold mt-2 leading-none relative"
+        style={{ color, textShadow: `0 0 18px ${color}66` }}>{value}</p>
+      <p className="text-[10px] mt-1.5 relative" style={{ color: '#6B6B78' }}>{sub}</p>
     </div>
   )
 }
@@ -461,52 +580,42 @@ function HabitDetailSheet({
       />
       {/* Sheet */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl px-5 pt-5 pb-10"
+        className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl px-4 pt-4 pb-8"
         style={{
-          background: 'rgba(5,5,7,0.90)',
+          background: 'rgba(5,5,7,0.92)',
           backdropFilter: 'blur(48px) saturate(200%)',
           WebkitBackdropFilter: 'blur(48px) saturate(200%)',
           border: '1px solid rgba(255,255,255,0.08)',
-          maxHeight: '82vh',
+          maxHeight: '58vh',
           overflowY: 'auto',
         }}
       >
         {/* Handle */}
-        <div className="w-9 h-1 rounded-full mx-auto mb-4" style={{ background: 'rgba(255,255,255,0.15)' }} />
+        <div className="w-8 h-1 rounded-full mx-auto mb-3" style={{ background: 'rgba(255,255,255,0.15)' }} />
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-1">
-          <p className="text-white text-lg font-bold truncate flex-1 pr-3">{habit}</p>
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <p className="text-white text-base font-bold truncate">{habit}</p>
+            <p className="text-[11px] text-muted">{monthLabel}</p>
+          </div>
           <button onClick={onClose} className="w-7 h-7 flex items-center justify-center text-muted">
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
               <path d="M15 5L5 15M5 5l10 10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
             </svg>
           </button>
         </div>
-        <p className="text-xs text-muted mb-5">{monthLabel}</p>
 
-        {/* Mini stats */}
-        <div className="grid grid-cols-3 gap-3 mb-5">
-          <div className="glass rounded-2xl px-3 py-3 text-center">
-            <p className="text-xl font-bold" style={{ color: 'var(--char-accent)' }}>{pct}%</p>
-            <p className="text-[10px] text-muted mt-0.5">completion</p>
-          </div>
-          <div className="glass rounded-2xl px-3 py-3 text-center">
-            <p className="text-xl font-bold text-white">{daysDone}</p>
-            <p className="text-[10px] text-muted mt-0.5">days done</p>
-          </div>
-          <div className="glass rounded-2xl px-3 py-3 text-center">
-            <p className="text-xl font-bold text-white">{bestStreak}</p>
-            <p className="text-[10px] text-muted mt-0.5">best streak</p>
-          </div>
-        </div>
+        {/* Stats + chart side by side */}
+        <div className="flex items-center gap-3">
+          {/* Fan chart — constrained width */}
+          <div style={{ width: '52%', flexShrink: 0 }}>
+            <svg
+              viewBox={`0 0 ${vbW} ${vbH}`}
+              width="100%"
+              style={{ overflow: 'visible' }}
+            >
 
-        {/* Fan chart */}
-        <svg
-          viewBox={`0 0 ${vbW} ${vbH}`}
-          width="100%"
-          style={{ overflow: 'visible' }}
-        >
           {days.map((day) => {
             const a1       = SF_START + (day - 1) * anglePerDay
             const a2       = SF_START + day * anglePerDay
@@ -528,7 +637,7 @@ function HabitDetailSheet({
                     x={lx} y={ly}
                     textAnchor="middle"
                     dominantBaseline="middle"
-                    fill="#636366"
+                    fill="#7A7A86"
                     fontSize="6"
                     fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
                   >
@@ -555,27 +664,46 @@ function HabitDetailSheet({
             x={CX} y={CY + 7}
             textAnchor="middle"
             dominantBaseline="middle"
-            fill="#636366"
+            fill="#7A7A86"
             fontSize="6.5"
             fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
           >
             done
           </text>
-        </svg>
+            </svg>
+          </div>
 
-        {/* Legend */}
-        <div className="flex items-center gap-4 mt-2">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-sm" style={{ background: 'var(--char-accent)' }} />
-            <span className="text-[10px] text-muted">Done</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-sm" style={{ background: '#2C2C2E' }} />
-            <span className="text-[10px] text-muted">Missed</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-sm" style={{ background: '#111111' }} />
-            <span className="text-[10px] text-muted">Future</span>
+          {/* Side stats */}
+          <div className="flex-1 flex flex-col gap-3">
+            {[
+              { label: 'Completion', value: `${pct}%`, accent: true },
+              { label: 'Days done',  value: `${daysDone}/${todayDay}`, accent: false },
+              { label: 'Best streak', value: `${bestStreak}d`, accent: false },
+            ].map(({ label, value, accent }) => (
+              <div key={label} className="rounded-xl px-3 py-2.5"
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                }}>
+                <p className="text-[9px] text-muted uppercase tracking-widest">{label}</p>
+                <p className="text-lg font-bold leading-tight mt-0.5"
+                  style={{ color: accent ? 'var(--char-accent)' : '#fff' }}>{value}</p>
+              </div>
+            ))}
+
+            {/* Legend */}
+            <div className="flex flex-col gap-1 mt-1">
+              {[
+                { label: 'Done',   bg: 'var(--char-accent)' },
+                { label: 'Missed', bg: '#2C2C2E' },
+                { label: 'Future', bg: '#111111' },
+              ].map(({ label, bg }) => (
+                <div key={label} className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-sm" style={{ background: bg }} />
+                  <span className="text-[10px] text-muted">{label}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

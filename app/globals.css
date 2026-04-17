@@ -48,6 +48,12 @@ body {
 * { scrollbar-width: none; -ms-overflow-style: none; }
 
 @layer utilities {
+  /* Muted text — labels, subtitles, secondary info */
+  .text-muted { color: #7A7A86; }
+
+  /* Dimmed text — disabled states, placeholder-level hints */
+  .text-dim   { color: #4E4E5A; }
+
   /* Primary glass card — cards, panels, option rows */
   .glass {
     background: rgba(18, 18, 22, 0.52);

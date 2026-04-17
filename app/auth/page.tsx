@@ -11,6 +11,18 @@ export default function AuthPage() {
   const [oauthLoading, setOauthLoading] = useState<'google' | 'apple' | null>(null)
 
   const supabase = createBrowserClient()
+  const isDev = process.env.NODE_ENV === 'development'
+
+  async function handleDevLogin() {
+    setLoading(true)
+    setError(null)
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: 'gokulk975@gmail.com',
+      password: 'devlocal123',
+    })
+    if (signInError) { setError(signInError.message) } else { window.location.href = '/dashboard' }
+    setLoading(false)
+  }
 
   async function handleMagicLink(e: React.FormEvent) {
     e.preventDefault()
@@ -68,6 +80,18 @@ export default function AuthPage() {
 
       {/* Sign-in options */}
       <div className="flex flex-col gap-3">
+        {isDev && (
+          <button
+            type="button"
+            onClick={handleDevLogin}
+            disabled={busy}
+            className="w-full rounded-2xl py-3 text-xs font-mono text-white border border-dashed disabled:opacity-40 active:opacity-70 cursor-pointer"
+            style={{ borderColor: '#FF9F0A', color: '#FF9F0A', background: 'rgba(255,159,10,0.08)' }}
+          >
+            {loading ? 'Sending…' : 'Dev login — gokulk975@gmail.com'}
+          </button>
+        )}
+
         {/* Google — primary */}
         <button
           onClick={() => handleOAuth('google')}
@@ -78,17 +102,7 @@ export default function AuthPage() {
           {oauthLoading === 'google' ? 'Redirecting…' : 'Continue with Google'}
         </button>
 
-        {/* Apple */}
-        <button
-          onClick={() => handleOAuth('apple')}
-          disabled={busy}
-          className="flex w-full items-center justify-center gap-3 rounded-2xl bg-white py-3.5 text-sm font-semibold text-black disabled:opacity-40 transition-opacity"
-        >
-          <AppleIcon />
-          {oauthLoading === 'apple' ? 'Redirecting…' : 'Continue with Apple'}
-        </button>
-
-        <div className="flex items-center gap-3 py-1">
+<div className="flex items-center gap-3 py-1">
           <div className="h-px flex-1" style={{ background: '#2C2C2E' }} />
           <span className="text-xs text-muted">or</span>
           <div className="h-px flex-1" style={{ background: '#2C2C2E' }} />

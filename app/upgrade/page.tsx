@@ -99,7 +99,7 @@ export default function UpgradePage() {
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center">
-        <p className="text-sm" style={{ color: '#636366' }}>Loading…</p>
+        <p className="text-sm" style={{ color: '#7A7A86' }}>Loading…</p>
       </main>
     )
   }
@@ -108,7 +108,7 @@ export default function UpgradePage() {
     <main className="min-h-screen pb-28">
       <div className="px-5 pt-14 mb-8">
         <h1 className="text-white text-2xl font-bold">Go Premium</h1>
-        <p className="text-sm mt-1" style={{ color: '#636366' }}>Unlock the full Looloop experience.</p>
+        <p className="text-sm mt-1" style={{ color: '#7A7A86' }}>Unlock the full Looloop experience.</p>
       </div>
 
       <div className="px-5 flex flex-col gap-3">
@@ -116,7 +116,7 @@ export default function UpgradePage() {
           <div className="glass rounded-2xl px-5 py-8 text-center">
             <div className="text-4xl mb-3">🎉</div>
             <p className="text-white font-semibold">You&apos;re already premium</p>
-            <p className="text-sm mt-1" style={{ color: '#636366' }}>Access runs until {premiumUntil}</p>
+            <p className="text-sm mt-1" style={{ color: '#7A7A86' }}>Access runs until {premiumUntil}</p>
             <button
               onClick={() => router.push('/dashboard')}
               className="glass-elevated mt-6 w-full rounded-2xl py-3 text-sm font-medium"
@@ -131,9 +131,9 @@ export default function UpgradePage() {
             <div className="glass rounded-2xl px-5 py-6">
               <div className="flex items-baseline gap-1 mb-1">
                 <p className="text-white text-4xl font-bold">{formatINR(99)}</p>
-                <p className="text-sm" style={{ color: '#636366' }}>/month</p>
+                <p className="text-sm" style={{ color: '#7A7A86' }}>/month</p>
               </div>
-              <p className="text-xs mb-6" style={{ color: '#636366' }}>Cancel anytime</p>
+              <p className="text-xs mb-6" style={{ color: '#7A7A86' }}>Cancel anytime</p>
 
               <div className="flex flex-col gap-3">
                 {PERKS.map(perk => (
@@ -154,7 +154,7 @@ export default function UpgradePage() {
 
             {/* Journal note */}
             <div className="glass rounded-2xl px-4 py-3.5">
-              <p className="text-sm" style={{ color: '#636366' }}>
+              <p className="text-sm" style={{ color: '#7A7A86' }}>
                 Got the journal? Scan the QR code inside to get{' '}
                 <span className="text-white font-medium">3 months free</span> — no card needed.
               </p>

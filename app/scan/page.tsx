@@ -91,12 +91,12 @@ export default function ScanPage() {
             style={{ border: '1.5px dashed rgba(255,255,255,0.12)', background: 'rgba(18,18,22,0.52)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}
           >
             <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-              <rect x="4" y="8" width="32" height="24" rx="4" stroke="#636366" strokeWidth="1.8" />
-              <circle cx="14" cy="16" r="3" stroke="#636366" strokeWidth="1.8" />
-              <path d="M4 26l9-7 6 5 5-4 8 7" stroke="#636366" strokeWidth="1.8"
+              <rect x="4" y="8" width="32" height="24" rx="4" stroke="#7A7A86" strokeWidth="1.8" />
+              <circle cx="14" cy="16" r="3" stroke="#7A7A86" strokeWidth="1.8" />
+              <path d="M4 26l9-7 6 5 5-4 8 7" stroke="#7A7A86" strokeWidth="1.8"
                 strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <p className="text-sm font-medium" style={{ color: '#636366' }}>
+            <p className="text-sm font-medium" style={{ color: '#7A7A86' }}>
               Tap to pick a photo or use camera
             </p>
             <p className="text-xs text-muted">JPEG · PNG · WEBP</p>

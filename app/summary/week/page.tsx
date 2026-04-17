@@ -253,14 +253,14 @@ function WeekContent() {
                     const isToday = date === todayStr
                     return (
                       <div key={date} className="flex flex-col items-center py-2 gap-0.5">
-                        <span className="text-[9px] font-medium" style={{ color: '#636366' }}>
+                        <span className="text-[9px] font-medium" style={{ color: '#7A7A86' }}>
                           {DAY_INITIALS[i]}
                         </span>
                         <span
                           className="text-[11px] font-semibold w-5 h-5 flex items-center justify-center rounded-full"
                           style={{
-                            background: isToday ? 'var(--char-accent)' : 'transparent',
-                            color:      isToday ? '#000'    : '#8E8E93',
+                            background: isToday ? 'rgba(255,255,255,0.75)' : 'transparent',
+                            color:      isToday ? '#000' : '#8E8E93',
                           }}
                         >
                           {dayNum}
@@ -373,7 +373,7 @@ function WeekContent() {
                   >
                     <span
                       className="w-7 text-right shrink-0 text-[10px] font-medium"
-                      style={{ color: isToday ? '#fff' : '#636366' }}
+                      style={{ color: isToday ? '#fff' : '#7A7A86' }}
                     >
                       {DAY_SHORT[i]}
                     </span>

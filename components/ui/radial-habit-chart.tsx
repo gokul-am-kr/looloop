@@ -16,10 +16,10 @@ const FAN_START = 100
 const FAN_END   = 260
 const FAN_SPAN  = FAN_END - FAN_START
 
-const MARGIN_L  = 8
-const MARGIN_T  = 10
+const MARGIN_L  = 17
+const MARGIN_T  = 17
 const MARGIN_B  = 8
-const LABEL_W   = 88
+const LABEL_W   = 45
 
 
 const CHAR_EMOJI: Record<string, string> = {
@@ -72,6 +72,22 @@ function segPath(cx: number, cy: number, r1: number, r2: number, a1: number, a2:
   )
 }
 
+// Arc segment with straight start (tile end) and rounded far end
+// startAngle > endAngle (decreasing — sweeps into label gap)
+function labelChipPath(cx: number, cy: number, r1: number, r2: number, startAngle: number, endAngle: number) {
+  const capR = (r2 - r1) / 2
+  const [ax, ay] = toXY(cx, cy, r1, startAngle)  // inner, tile end
+  const [bx, by] = toXY(cx, cy, r1, endAngle)    // inner, far end
+  const [ex, ey] = toXY(cx, cy, r2, endAngle)    // outer, far end
+  const [dx, dy] = toXY(cx, cy, r2, startAngle)  // outer, tile end
+  return (
+    `M ${ax.toFixed(2)} ${ay.toFixed(2)} ` +
+    `A ${r1} ${r1} 0 0 1 ${bx.toFixed(2)} ${by.toFixed(2)} ` +
+    `A ${capR.toFixed(2)} ${capR.toFixed(2)} 0 1 0 ${ex.toFixed(2)} ${ey.toFixed(2)} ` +
+    `A ${r2} ${r2} 0 0 0 ${dx.toFixed(2)} ${dy.toFixed(2)} Z`
+  )
+}
+
 function mkDate(y: number, m: number, d: number) {
   return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 }
@@ -101,7 +117,7 @@ export function RadialHabitChart({ habitNames, habitByDate, year, month, edition
   if (habitNames.length === 0) {
     return (
       <div className="flex items-center justify-center py-16">
-        <p className="text-sm" style={{ color: '#636366' }}>Set up habits to see your chart</p>
+        <p className="text-sm" style={{ color: '#7A7A86' }}>Set up habits to see your chart</p>
       </div>
     )
   }
@@ -110,14 +126,14 @@ export function RadialHabitChart({ habitNames, habitByDate, year, month, edition
   const CX          = outerR + MARGIN_L
   const CY          = Math.ceil(outerR * Math.sin((FAN_START * Math.PI) / 180)) + MARGIN_T
   const vbW         = CX + LABEL_W
-  const viewH       = CY + outerR + MARGIN_B
+  const viewH       = CY + outerR + RING_H + 14
   const emoji       = CHAR_EMOJI[edition] ?? '🐱'
   const accent      = palettes[edition as Edition]?.accent ?? '#FF6B35'
   const accentMiss  = hexDarken(accent, 0.72)  // dark tinted version for missed tiles
-
-  // Pre-compute trig for FAN_START so label y-positions align to their rings
-  const FS_COS = Math.cos((FAN_START * Math.PI) / 180)  // ≈ -0.174
-  const FS_SIN = Math.sin((FAN_START * Math.PI) / 180)  // ≈ 0.985
+  // Straight vertical boundary between tiles and labels.
+  // R_START is the innermost ring inner edge at FAN_START — the rightmost point
+  // any tile can reach, so labels starting here never overlap tiles.
+  const commonSX    = CX + R_START * Math.cos((FAN_START * Math.PI) / 180)
 
   return (
     <div className="w-full">
@@ -148,10 +164,50 @@ export function RadialHabitChart({ habitNames, habitByDate, year, month, edition
           <filter id="rhc-particle" x="-200%" y="-200%" width="500%" height="500%">
             <feGaussianBlur stdDeviation="1.8" />
           </filter>
+
+          {/* (label paths removed — labels are now straight pills) */}
+
+          {/* Glass chip fill gradient — accent tint fading to transparent */}
+          <linearGradient id={`rhc-chip-grad-${habitNames.length}`}
+            x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stopColor={accent} stopOpacity="0.18" />
+            <stop offset="60%"  stopColor={accent} stopOpacity="0.08" />
+            <stop offset="100%" stopColor={accent} stopOpacity="0.03" />
+          </linearGradient>
+
+          {/* Glass chip blur filter */}
+          <filter id="rhc-chip-blur" x="-10%" y="-40%" width="120%" height="180%">
+            <feGaussianBlur stdDeviation="1.5" />
+          </filter>
+
+          {/* Common clip for ambient halo */}
+          <clipPath id="rhc-tiles-clip">
+            <rect x="0" y="0" width={commonSX.toFixed(2)} height={viewH} />
+          </clipPath>
+          {/* Per-ring clips — diagonal polygon matching the angled label cut */}
+          {habitNames.map((_, hi) => {
+            const r1 = R_START + hi * (RING_H + RING_GAP)
+            const r2 = r1 + RING_H
+            const [lxOuter, dy] = toXY(CX, CY, r2, FAN_START)
+            const [lxInner, ay] = toXY(CX, CY, r1, FAN_START)
+            const pts = [
+              `0,0`,
+              `${lxOuter.toFixed(2)},0`,
+              `${lxOuter.toFixed(2)},${dy.toFixed(2)}`,
+              `${lxInner.toFixed(2)},${ay.toFixed(2)}`,
+              `${lxInner.toFixed(2)},${viewH}`,
+              `0,${viewH}`,
+            ].join(' ')
+            return (
+              <clipPath key={`rhc-ring-clip-${hi}`} id={`rhc-ring-clip-${hi}`}>
+                <polygon points={pts} />
+              </clipPath>
+            )
+          })}
         </defs>
 
         {/* ── Layer 0: ambient halo (blurred done tiles) ── */}
-        <g filter="url(#rhc-ambient)" opacity="0.38">
+        <g filter="url(#rhc-ambient)" opacity="0.38" clipPath="url(#rhc-tiles-clip)">
           {habitNames.flatMap((name, hi) => {
             const r1 = R_START + hi * (RING_H + RING_GAP)
             const r2 = r1 + RING_H
@@ -195,14 +251,28 @@ export function RadialHabitChart({ habitNames, habitByDate, year, month, edition
           )
         })}
 
-        {/* ── Layers 2–N: tile rings, outermost first ── */}
+        {/* ── Day separator pipes — thin radial ticks at every segment boundary ── */}
+        {Array.from({ length: daysInMonth + 1 }, (_, i) => {
+          const angle = FAN_START + i * angPerDay
+          const [x1, y1] = toXY(CX, CY, R_START, angle)
+          const [x2, y2] = toXY(CX, CY, outerR + RING_H, angle)
+          return (
+            <line key={`sep-${i}`}
+              x1={x1.toFixed(2)} y1={y1.toFixed(2)}
+              x2={x2.toFixed(2)} y2={y2.toFixed(2)}
+              stroke="#000" strokeWidth="0.8" opacity="0.6"
+            />
+          )
+        })}
+
+        {/* ── Layers 2–N: tile rings, outermost first (each clipped to its own arc edge) ── */}
         {[...habitNames].reverse().map((name, revHi) => {
           const hi = habitNames.length - 1 - revHi
           const r1 = R_START + hi * (RING_H + RING_GAP)
           const r2 = r1 + RING_H
 
           return (
-            <g key={`ring-${hi}`}>
+            <g key={`ring-${hi}`} clipPath={`url(#rhc-ring-clip-${hi})`}>
               {days.map((day, dayIdx) => {
                 const ds       = mkDate(year, month, day)
                 const isFuture = isCurrentMon && day > todayDay
@@ -229,63 +299,83 @@ export function RadialHabitChart({ habitNames, habitByDate, year, month, edition
           )
         })}
 
-        {/* ── Habit labels — y-aligned to each ring at FAN_START, with connector ── */}
+        {/* ── Habit label gradients + separators + text ── */}
         {habitNames.map((name, hi) => {
-          const rMid = R_START + hi * (RING_H + RING_GAP) + RING_H / 2
-          // y matches the ring's mid-radius at the fan's start angle
-          const lblY       = CY - rMid * FS_SIN
-          // connector: from ring mid-radius point → just past CX
-          const xConnStart = CX + rMid * FS_COS   // inside ring edge at FAN_START (slightly left of CX)
-          const xConnEnd   = CX + 3
-
+          const r1 = R_START + hi * (RING_H + RING_GAP)
+          const r2 = r1 + RING_H
+          // Angled cut: outer arc edge (top-left) → inner arc edge (bottom-left)
+          const [lxOuter, dy] = toXY(CX, CY, r2, FAN_START)
+          const [lxInner, ay] = toXY(CX, CY, r1, FAN_START)
+          const textY  = (dy + ay) / 2
+          const lineEnd = vbW - 2
+          const gradId = `rhc-label-grad-${hi}`
+          // Trapezoid: diagonal left edge follows the radial line at FAN_START
+          const bg = [
+            `M ${lxOuter.toFixed(2)} ${dy.toFixed(2)}`,
+            `L ${lineEnd} ${dy.toFixed(2)}`,
+            `L ${lineEnd} ${ay.toFixed(2)}`,
+            `L ${lxInner.toFixed(2)} ${ay.toFixed(2)} Z`,
+          ].join(' ')
           return (
-            <g key={`hlbl-${hi}`}>
-              {/* Dot at ring edge */}
-              <circle cx={xConnStart} cy={lblY} r={1} fill={accent} opacity={0.45} />
-              {/* Short horizontal bridge to label area */}
-              <line
-                x1={xConnStart.toFixed(2)} y1={lblY.toFixed(2)}
-                x2={xConnEnd.toFixed(2)}   y2={lblY.toFixed(2)}
-                stroke={accent} strokeWidth="0.5" opacity={0.25}
-              />
-              {/* Label text right-aligned */}
+            <g key={`label-${hi}`}>
+              <defs>
+                <linearGradient id={gradId} x1={lxOuter.toFixed(2)} y1="0" x2={lineEnd} y2="0"
+                  gradientUnits="userSpaceOnUse">
+                  <stop offset="0%"   stopColor={accent} stopOpacity="0.18" />
+                  <stop offset="50%"  stopColor={accent} stopOpacity="0.07" />
+                  <stop offset="100%" stopColor={accent} stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              <path d={bg} fill={`url(#${gradId})`} />
+              <line x1={lxOuter.toFixed(2)} y1={dy.toFixed(2)} x2={lineEnd} y2={dy.toFixed(2)}
+                stroke="#000" strokeWidth="0.8" opacity="0.6" />
+              {hi === habitNames.length - 1 && (
+                <line x1={lxInner.toFixed(2)} y1={ay.toFixed(2)} x2={lineEnd} y2={ay.toFixed(2)}
+                  stroke="#000" strokeWidth="0.8" opacity="0.6" />
+              )}
               <text
-                x={vbW - 2} y={lblY}
-                textAnchor="end" dominantBaseline="middle"
-                fill="#B8B8C0" fontSize="8"
+                x={commonSX + 4} y={textY}
+                dominantBaseline="middle"
+                fill="#C0C0CA" fontSize="4.5"
                 fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
-                letterSpacing="0.2"
+                letterSpacing="0.3"
               >
-                {name.length > 11 ? name.slice(0, 10) + '…' : name}
+                {name.length > 12 ? name.slice(0, 11) + '…' : name}
               </text>
             </g>
           )
         })}
 
-        {/* ── Day number labels ── */}
+        {/* ── Day number labels — outside the outermost ring ── */}
         {days.map(day => {
-          if (!showLabel(day) && day !== todayDay) return null
-          const [x, y] = toXY(CX, CY, R_LABEL, aMid(day))
-          const isToday = day === todayDay
+          if (day === todayDay) return null  // rendered by circle indicator below
+          const rOuter = outerR + RING_H + 2
+          const [x, y] = toXY(CX, CY, rOuter, aMid(day))
+          const isMilestone = showLabel(day)
           return (
             <text key={`lbl-${day}`} x={x} y={y}
               textAnchor="middle" dominantBaseline="middle"
-              fill={isToday ? '#fff' : '#3A3A44'}
-              fontSize={isToday ? '7.5' : '6'}
-              fontWeight={isToday ? '600' : '400'}
+              fill={isMilestone ? '#7A7A86' : '#3A3A48'}
+              fontSize={isMilestone ? '6' : '4'}
+              fontWeight="400"
               fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
             >{day}</text>
           )
         })}
 
-        {/* Today glow dot */}
+        {/* Today circle indicator */}
         {todayDay > 0 && (() => {
-          const [tx, ty] = toXY(CX, CY, R_LABEL, aMid(todayDay))
+          const rOuter = outerR + RING_H + 2
+          const [tx, ty] = toXY(CX, CY, rOuter, aMid(todayDay))
           return (
-            <>
-              <circle cx={tx} cy={ty} r={6} fill={accent} opacity={0.08} />
-              <circle cx={tx} cy={ty} r={3} fill="rgba(255,255,255,0.22)" />
-            </>
+            <g>
+              <circle cx={tx} cy={ty} r={4.5} fill="#ffffff" opacity="0.75" />
+              <text x={tx} y={ty + 1.9}
+                textAnchor="middle"
+                fill="#000000" fontSize="5" fontWeight="700"
+                fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
+              >{todayDay}</text>
+            </g>
           )
         })()}
 
@@ -302,7 +392,7 @@ export function RadialHabitChart({ habitNames, habitByDate, year, month, edition
         ].map(({ label, bg }) => (
           <div key={label} className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-sm" style={{ background: bg }} />
-            <span className="text-[10px] tracking-wide" style={{ color: '#52525A' }}>{label}</span>
+            <span className="text-[10px] tracking-wide" style={{ color: '#7A7A86' }}>{label}</span>
           </div>
         ))}
       </div>

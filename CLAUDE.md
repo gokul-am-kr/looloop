@@ -237,6 +237,70 @@ NEXT_PUBLIC_APP_URL=         # e.g. https://app.doodoodle.in
 
 ---
 
+## Design system
+
+The app uses a unified premium dark glassmorphism theme. Every new screen must follow these rules.
+
+### Background
+- Base: `#050505` (set on `<body>` in `globals.css`)
+- Ambient orbs from CSS variables `--char-orb1/2/3` provide a subtle glow per character
+- `background-attachment: fixed` keeps orbs stationary as content scrolls
+
+### Glass surface classes (defined in `app/globals.css`)
+| Class | Use for | Key properties |
+|---|---|---|
+| `.glass` | Cards, panels, option rows | `rgba(18,18,22,0.52)` · blur(24px) · border rgba(255,255,255,0.08) |
+| `.glass-elevated` | Inputs, message bubbles, secondary surfaces | `rgba(36,36,44,0.62)` · blur(16px) |
+| `.glass-strong` | Bottom sheets, overlays | `rgba(5,5,7,0.78)` · blur(48px) |
+
+For inline glass cards (stat cards, habit cards) use:
+```
+background: rgba(255,255,255,0.04)
+backdropFilter: blur(16px)
+border: 1px solid rgba(255,255,255,0.07)
+boxShadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 24px rgba(0,0,0,0.3)
+```
+
+### Text hierarchy
+| Token | Value | Use |
+|---|---|---|
+| White | `#ffffff` | Headlines, primary values |
+| `.text-muted` | `#7A7A86` | Labels, subtitles, secondary info |
+| `.text-dim` | `#4E4E5A` | Disabled states, placeholder hints |
+| Accent | `var(--char-accent)` | Active values, highlights |
+
+**Never use** `#636366`, `#52525A`, `#3A3A44` — these are invisible on the dark background.
+
+### Interactive elements
+- **Tab bar (Habits/Sleep/Mood)**: glass container `rgba(255,255,255,0.05)` blur(12px); active tab gets `linear-gradient(135deg, color1, color2)` + outer glow `box-shadow: 0 0 18px colorXX`
+- **Bottom nav**: glass pill `rgba(255,255,255,0.06)` blur(24px); active item gets tinted background `color18` + glow `color22`
+- **Stat cards**: inline glass with diagonal color wash `color22 → transparent`, corner bloom, specular top edge, value `textShadow: 0 0 18px color66`
+- **Buttons (primary)**: `var(--char-accent)` fill, black text, accent glow shadow
+- **Buttons (secondary)**: `.glass-elevated` with muted text
+
+### Accent glow pattern
+When showing active/highlighted values, always pair the color with a matching glow:
+```tsx
+// Number value
+style={{ color: accent, textShadow: `0 0 18px ${accent}66` }}
+
+// Dot indicator
+style={{ background: accent, boxShadow: `0 0 6px ${accent}` }}
+
+// Card glow
+boxShadow: `... 0 0 20px ${color}18`
+```
+
+### Radial chart (RadialHabitChart)
+- Fan: 100° → 260° (leftward)
+- Done tiles: accent color + `rhc-neon` drop-shadow filter
+- Labels: curved `<textPath>` along ring mid-radius from FAN_START; glass chip background with rounded far end
+- Day separators: thin `#000` radial lines at every day boundary
+- Day number labels: outside outermost ring at `outerR + RING_H + 6`
+- Character centre: glowing circle with accent stroke
+
+---
+
 ## Do not
 
 - Do not call the Claude API or Razorpay from client-side code — always route through `/app/api/`
@@ -246,6 +310,9 @@ NEXT_PUBLIC_APP_URL=         # e.g. https://app.doodoodle.in
 - Do not change Supabase column names without updating the schema section above
 - Do not add ₹ pricing anywhere without using the `formatINR()` utility in `/lib/utils.ts`
 - Do not skip TypeScript types — no `any`
+- Do not use hardcoded dark colors (`#636366`, `#52525A`, `#3A3A44`) — use `text-muted` class or `#7A7A86`
+- Do not build new pages without the glass surface classes and dark background — every screen must match the glassmorphism theme
+- Do not use opaque solid backgrounds on cards — always use translucent glass with backdrop-filter
 
 ---
 

@@ -90,12 +90,25 @@ export function RadialMoodChart({ logs, year, month, edition = 'mochi', onDayCli
         width="100%"
         style={{ overflow: 'visible' }}
       >
-        <style>{`
-          @keyframes moodPop {
-            from { transform-origin: ${CX}px ${CY}px; transform: scale(0); opacity: 0; }
-            to   { transform-origin: ${CX}px ${CY}px; transform: scale(1); opacity: 1; }
-          }
-        `}</style>
+        <defs>
+          <style>{`
+            @keyframes moodPop {
+              from { transform-origin: ${CX}px ${CY}px; transform: scale(0); opacity: 0; }
+              to   { transform-origin: ${CX}px ${CY}px; transform: scale(1); opacity: 1; }
+            }
+          `}</style>
+          {/* Radial sheen — lit from centre outward */}
+          <radialGradient id="mood-sheen" cx="50%" cy="50%" r="50%">
+            <stop offset="0%"   stopColor="#ffffff" stopOpacity="0.18" />
+            <stop offset="55%"  stopColor="#ffffff" stopOpacity="0.05" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="0"    />
+          </radialGradient>
+          {/* Radial edge darkening — gives depth toward outer rim */}
+          <radialGradient id="mood-rim" cx="50%" cy="50%" r="50%">
+            <stop offset="60%"  stopColor="#000000" stopOpacity="0"    />
+            <stop offset="100%" stopColor="#000000" stopOpacity="0.22" />
+          </radialGradient>
+        </defs>
 
         {days.map((day, idx) => {
           const a1       = (day - 1) * anglePerDay
@@ -119,27 +132,75 @@ export function RadialMoodChart({ logs, year, month, edition = 'mochi', onDayCli
                 animation: `moodPop 0.35s ease ${idx * 12}ms both`,
               }}
             >
+              {/* Base segment */}
               <path
                 d={segPath(R_INNER, r2, a1, a2)}
                 fill={fill}
-                stroke="#000"
+                stroke="rgba(0,0,0,0.6)"
                 strokeWidth="0.5"
               />
-              {showLabel(day) && (
-                <text
-                  x={lx} y={ly}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize="6"
-                  fill={isFuture ? '#2C2C2E' : '#636366'}
-                  fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
-                >
-                  {day}
-                </text>
+              {/* Glass sheen overlay */}
+              {!isFuture && mood > 0 && (
+                <path
+                  d={segPath(R_INNER, r2, a1, a2)}
+                  fill="url(#mood-sheen)"
+                  stroke="none"
+                  style={{ pointerEvents: 'none' }}
+                />
               )}
+              {/* Outer rim depth */}
+              {!isFuture && mood > 0 && (
+                <path
+                  d={segPath(R_INNER, r2, a1, a2)}
+                  fill="url(#mood-rim)"
+                  stroke="none"
+                  style={{ pointerEvents: 'none' }}
+                />
+              )}
+              {/* Bright outer-arc edge highlight */}
+              {!isFuture && mood > 0 && (() => {
+                const [ex1, ey1] = toXY(CX, CY, r2, a1)
+                const [ex2, ey2] = toXY(CX, CY, r2, a2)
+                const large = (a2 - a1 > 180) ? 1 : 0
+                return (
+                  <path
+                    d={`M ${ex1.toFixed(2)} ${ey1.toFixed(2)} A ${r2} ${r2} 0 ${large} 1 ${ex2.toFixed(2)} ${ey2.toFixed(2)}`}
+                    fill="none"
+                    stroke="rgba(255,255,255,0.18)"
+                    strokeWidth="0.7"
+                    style={{ pointerEvents: 'none' }}
+                  />
+                )
+              })()}
+              {(showLabel(day) || (!isFuture && isCurrentMon && day === todayDay)) && (() => {
+                const isToday = !isFuture && isCurrentMon && day === todayDay
+                return isToday ? (
+                  <g>
+                    <circle cx={lx} cy={ly} r={4.5} fill="#ffffff" opacity="0.75" />
+                    <text
+                      x={lx} y={ly + 1.9}
+                      textAnchor="middle"
+                      fill="#000000" fontSize="5" fontWeight="700"
+                      fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
+                    >{day}</text>
+                  </g>
+                ) : (
+                  <text
+                    x={lx} y={ly}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fontSize="6"
+                    fill={isFuture ? '#2C2C2E' : '#7A7A86'}
+                    fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
+                  >{day}</text>
+                )
+              })()}
             </g>
           )
         })}
+
+        {/* Global glass sheen over full wheel */}
+        <circle cx={CX} cy={CY} r={R_MAX} fill="url(#mood-sheen)" style={{ pointerEvents: 'none' }} />
 
         {/* Inner circle (covers segment bases) */}
         <circle cx={CX} cy={CY} r={R_INNER} fill="#050507" />

@@ -82,7 +82,7 @@ function MoodLogContent() {
     <main className="min-h-screen pb-28">
       {/* Header */}
       <div className="px-5 pt-14 flex items-center gap-3 mb-8">
-        <button onClick={() => router.back()} style={{ color: '#636366' }}>
+        <button onClick={() => router.back()} style={{ color: '#7A7A86' }}>
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="1.8"
               strokeLinecap="round" strokeLinejoin="round" />
@@ -90,7 +90,7 @@ function MoodLogContent() {
         </button>
         <div>
           <h1 className="text-white text-xl font-bold">How are you feeling?</h1>
-          <p className="text-sm mt-0.5" style={{ color: '#636366' }}>{dateLabel}</p>
+          <p className="text-sm mt-0.5" style={{ color: '#7A7A86' }}>{dateLabel}</p>
         </div>
       </div>
 

@@ -40,7 +40,7 @@ export default function HabitsPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-sm" style={{ color: '#636366' }}>Loading…</p>
+        <p className="text-sm" style={{ color: '#7A7A86' }}>Loading…</p>
       </div>
     }>
       <HabitsContent />
@@ -175,7 +175,7 @@ function HabitsContent() {
   if (mode === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-sm" style={{ color: '#636366' }}>Loading…</p>
+        <p className="text-sm" style={{ color: '#7A7A86' }}>Loading…</p>
       </div>
     )
   }
@@ -190,11 +190,11 @@ function HabitsContent() {
             <h1 className="text-white text-2xl font-bold">
               {isSetup ? 'Name your habits' : 'Edit habits'}
             </h1>
-            {isSetup && <p className="text-sm mt-1" style={{ color: '#636366' }}>Up to {MAX_HABITS}. Edit anytime.</p>}
+            {isSetup && <p className="text-sm mt-1" style={{ color: '#7A7A86' }}>Up to {MAX_HABITS}. Edit anytime.</p>}
           </div>
           {!isSetup && (
             <button onClick={() => { setMode('log'); setError(null) }}
-              className="text-sm" style={{ color: '#636366' }}>
+              className="text-sm" style={{ color: '#7A7A86' }}>
               Cancel
             </button>
           )}
@@ -214,7 +214,7 @@ function HabitsContent() {
                 <button
                   onClick={() => setEditNames(editNames.filter((_, idx) => idx !== i))}
                   className="text-xl leading-none w-8 text-center"
-                  style={{ color: '#636366' }}
+                  style={{ color: '#7A7A86' }}
                 >×</button>
               )}
             </div>
@@ -223,7 +223,7 @@ function HabitsContent() {
 
         {editNames.length < MAX_HABITS && (
           <button onClick={() => setEditNames([...editNames, ''])}
-            className="mt-4 text-sm" style={{ color: '#636366' }}>
+            className="mt-4 text-sm" style={{ color: '#7A7A86' }}>
             + Add habit
           </button>
         )}
@@ -267,7 +267,7 @@ function HabitsContent() {
     return (
       <main className="min-h-screen pb-28">
         <div className="px-5 pt-14 flex items-center gap-3 mb-6">
-          <button onClick={() => router.back()} style={{ color: '#636366' }}>
+          <button onClick={() => router.back()} style={{ color: '#7A7A86' }}>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="1.8"
                 strokeLinecap="round" strokeLinejoin="round" />
@@ -275,7 +275,7 @@ function HabitsContent() {
           </button>
           <div>
             <h1 className="text-white text-xl font-bold">Habits</h1>
-            <p className="text-sm mt-0.5" style={{ color: '#636366' }}>{dateLabel}</p>
+            <p className="text-sm mt-0.5" style={{ color: '#7A7A86' }}>{dateLabel}</p>
           </div>
         </div>
 
@@ -288,7 +288,7 @@ function HabitsContent() {
           })}
         </div>
 
-        <p className="px-5 mt-5 text-xs" style={{ color: '#636366' }}>
+        <p className="px-5 mt-5 text-xs" style={{ color: '#7A7A86' }}>
           {doneSingle} of {habitNames.length} done
         </p>
 
@@ -305,7 +305,7 @@ function HabitsContent() {
         <h1 className="text-white text-2xl font-bold">Habits</h1>
         <button
           onClick={() => { setEditNames([...habitNames]); setError(null); setMode('edit') }}
-          className="text-sm" style={{ color: '#636366' }}
+          className="text-sm" style={{ color: '#7A7A86' }}
         >
           Edit
         </button>
@@ -326,7 +326,7 @@ function HabitsContent() {
               className="flex flex-col items-center gap-1.5"
             >
               <span className="text-[11px] font-medium"
-                style={{ color: isSelected ? '#ffffff' : '#636366' }}>
+                style={{ color: isSelected ? '#ffffff' : '#7A7A86' }}>
                 {dayLetter(date)}
               </span>
               <ProgressRing
@@ -337,7 +337,7 @@ function HabitsContent() {
                 trackColor={isSelected ? '#2C2C2E' : '#1A1A1A'}
               >
                 <span className="text-[10px] font-semibold"
-                  style={{ color: isSelected ? '#ffffff' : '#636366' }}>
+                  style={{ color: isSelected ? '#ffffff' : '#7A7A86' }}>
                   {dayNum(date)}
                 </span>
               </ProgressRing>
@@ -348,8 +348,8 @@ function HabitsContent() {
 
       {/* Selected date + count */}
       <div className="px-5 mt-6 flex items-baseline justify-between">
-        <p className="text-sm" style={{ color: '#636366' }}>{formattedDate(selectedDate, selectedIdx)}</p>
-        <p className="text-sm font-medium" style={{ color: doneCount === totalCount && totalCount > 0 ? 'var(--char-accent)' : '#636366' }}>
+        <p className="text-sm" style={{ color: '#7A7A86' }}>{formattedDate(selectedDate, selectedIdx)}</p>
+        <p className="text-sm font-medium" style={{ color: doneCount === totalCount && totalCount > 0 ? 'var(--char-accent)' : '#7A7A86' }}>
           {doneCount === totalCount && totalCount > 0 ? 'All done ✓' : `${doneCount}/${totalCount}`}
         </p>
       </div>

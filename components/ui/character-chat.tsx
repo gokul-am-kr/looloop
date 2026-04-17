@@ -145,7 +145,7 @@ export function CharacterChat({ edition, charName, streak }: Props) {
               <p className="text-[11px] mt-0.5" style={{ color: 'var(--char-accent)' }}>🔥 {streak}-day streak</p>
             )}
           </div>
-          <p className="text-[10px] mr-2" style={{ color: '#636366' }}>{10 - usedToday} left today</p>
+          <p className="text-[10px] mr-2" style={{ color: '#7A7A86' }}>{10 - usedToday} left today</p>
           <button
             onClick={() => setOpen(false)}
             className="w-7 h-7 rounded-full flex items-center justify-center glass-elevated"
@@ -185,13 +185,13 @@ export function CharacterChat({ edition, charName, streak }: Props) {
           {loading && (
             <div className="flex justify-start">
               <div className="px-3 py-2 rounded-2xl glass-elevated" style={{ borderBottomLeftRadius: 4 }}>
-                <span className="text-sm" style={{ color: '#636366' }}>···</span>
+                <span className="text-sm" style={{ color: '#7A7A86' }}>···</span>
               </div>
             </div>
           )}
 
           {limitReached && (
-            <p className="text-center text-[11px] py-1" style={{ color: '#636366' }}>
+            <p className="text-center text-[11px] py-1" style={{ color: '#7A7A86' }}>
               Daily limit reached — back tomorrow ✌️
             </p>
           )}

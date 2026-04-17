@@ -1,41 +1,23 @@
 'use client'
 
-// Full-circle polar sleep chart (bullet-journal style)
-// Day 1 at top, clockwise. Spoke length = hours slept.
-// Concentric rings = hour markers. Dashed ring = 8h goal.
+// Monthly sleep bar chart
+// One bar per day · height = hours slept · colour = quality
+// Dashed goal line at 8 h
 
-const CX = 175
-const CY = 175
-const R_CENTER = 22   // inner empty circle
-const R_MAX    = 128  // outermost ring (H_MAX hours)
-const R_SPOKE  = 131  // spoke tip (just past max ring)
-const R_LABEL  = 147  // day number label radius
-
-const H_MIN = 3        // hours mapped to R_CENTER
-const H_MAX = 10       // hours mapped to R_MAX
-const HOUR_RINGS = [4, 5, 6, 7, 8, 9, 10]
-const GOAL_H = 8       // hours — drawn as dashed blue ring
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function hToR(h: number): number {
-  const c = Math.max(H_MIN, Math.min(H_MAX, h))
-  return R_CENTER + ((c - H_MIN) / (H_MAX - H_MIN)) * (R_MAX - R_CENTER)
+interface SleepEntry {
+  bedtime:   string
+  wake_time: string
+  quality:   number
 }
 
-function ringRadius(h: number): number {
-  return R_CENTER + ((h - H_MIN) / (H_MAX - H_MIN)) * (R_MAX - R_CENTER)
+interface Props {
+  sleepByDate: Record<string, SleepEntry>
+  year:        number
+  month:       number
+  onDayClick:  (dateStr: string) => void
 }
 
-// Day 1 at top (90° math), going clockwise (decreasing math angle)
-function dayAngle(d: number, total: number): number {
-  return 90 - ((d - 1) / total) * 360
-}
-
-function polar(r: number, deg: number): [number, number] {
-  const rad = (deg * Math.PI) / 180
-  return [CX + r * Math.cos(rad), CY - r * Math.sin(rad)]
-}
+// ── helpers ───────────────────────────────────────────────────────────────────
 
 function sleepHrs(bedtime: string, wake_time: string): number {
   const [bh, bm] = bedtime.split(':').map(Number)
@@ -52,28 +34,30 @@ function mkDate(y: number, m: number, d: number): string {
   return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 }
 
-function dotColor(quality: number): string {
+function barColor(quality: number): string {
   if (quality >= 4) return '#5AC8FA'
   if (quality === 3) return '#3A8FA8'
   return '#1E5F7A'
 }
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// ── layout constants ──────────────────────────────────────────────────────────
 
-interface SleepEntry {
-  bedtime: string
-  wake_time: string
-  quality: number
+const H_MAX   = 10
+const VIEW_W  = 340
+const VIEW_H  = 160
+const CL      = 24    // left margin  (hour labels)
+const CR      = 334   // right edge
+const CT      = 10    // top of chart
+const CB      = 132   // bottom of bars / baseline
+const LBL_Y   = 146   // day number label y
+const CW      = CR - CL
+const CH      = CB - CT
+
+function hToY(h: number): number {
+  return CB - (Math.min(Math.max(h, 0), H_MAX) / H_MAX) * CH
 }
 
-interface Props {
-  sleepByDate: Record<string, SleepEntry>
-  year: number
-  month: number
-  onDayClick: (dateStr: string) => void
-}
-
-// ── Component ─────────────────────────────────────────────────────────────────
+// ── component ─────────────────────────────────────────────────────────────────
 
 export function RadialSleepChart({ sleepByDate, year, month, onDayClick }: Props) {
   const now          = new Date()
@@ -82,181 +66,188 @@ export function RadialSleepChart({ sleepByDate, year, month, onDayClick }: Props
   const daysInMonth  = new Date(year, month + 1, 0).getDate()
   const days         = Array.from({ length: daysInMonth }, (_, i) => i + 1)
 
-  // Build polygon — all days in order, future days at R_CENTER (no dip shown visually)
-  const polygonPts = days.map(day => {
-    const ds  = mkDate(year, month, day)
-    const log = sleepByDate[ds]
-    const ang = dayAngle(day, daysInMonth)
-    if (day > todayDay) {
-      // Future: center (won't render as polygon segment past today)
-      return polar(R_CENTER, ang)
-    }
-    if (log?.bedtime && log?.wake_time) {
-      return polar(hToR(sleepHrs(log.bedtime, log.wake_time)), ang)
-    }
-    return polar(R_CENTER, ang)  // no data → dip to centre
-  })
+  const slotW        = CW / daysInMonth
+  const barW         = Math.max(slotW * 0.7, 2.5)
+  const barOffset    = (slotW - barW) / 2
 
-  // Only close polygon if we have past/current data
-  const polygonStr = polygonPts
-    .slice(0, Math.min(todayDay, daysInMonth))
-    .map(([x, y]) => `${x.toFixed(2)},${y.toFixed(2)}`)
-    .join(' ')
+  const showLabel    = (d: number) => d === 1 || d % 5 === 0 || d === daysInMonth
 
-  // Hour tick labels — placed along the spoke between day 1 and day 2 (upper-right gap)
-  const tickAngle = dayAngle(0.5, daysInMonth)  // between day N and day 1
+  const Y_GRID = [4, 6, 8, 10]
 
   return (
     <div className="w-full">
       <svg
         key={`${year}-${month}`}
-        viewBox="0 0 350 350"
+        viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
         width="100%"
       >
-        <style>{`
-          @keyframes rscFade {
-            from { opacity: 0; }
-            to   { opacity: 1; }
-          }
-          @keyframes rscPoly {
-            from { opacity: 0; stroke-dashoffset: 800; }
-            to   { opacity: 1; stroke-dashoffset: 0; }
-          }
-        `}</style>
+        <defs>
+          <style>{`
+            @keyframes slpBar {
+              from { opacity: 0; transform: scaleY(0); }
+              to   { opacity: 1; transform: scaleY(1); }
+            }
+          `}</style>
+          {/* Vertical sheen: bright top → transparent mid */}
+          <linearGradient id="slp-sheen-v" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stopColor="#ffffff" stopOpacity="0.28" />
+            <stop offset="50%"  stopColor="#ffffff" stopOpacity="0.06" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="0"    />
+          </linearGradient>
+          {/* Horizontal sheen: left highlight → transparent right */}
+          <linearGradient id="slp-sheen-h" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"   stopColor="#ffffff" stopOpacity="0.18" />
+            <stop offset="55%"  stopColor="#ffffff" stopOpacity="0.04" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="0"    />
+          </linearGradient>
+        </defs>
 
-        {/* ── Concentric hour rings ── */}
-        {HOUR_RINGS.map(h => {
-          const r       = ringRadius(h)
-          const isGoal  = h === GOAL_H
+        {/* ── Grid lines + hour labels ── */}
+        {Y_GRID.map(h => {
+          const y      = hToY(h)
+          const isGoal = h === 8
           return (
-            <circle
-              key={h}
-              cx={CX} cy={CY} r={r}
-              fill="none"
-              stroke={isGoal ? '#5AC8FA' : '#2A2A2A'}
-              strokeWidth={isGoal ? 1.2 : 0.5}
-              strokeDasharray={isGoal ? '5 4' : ''}
-              opacity={isGoal ? 0.75 : 0.7}
-            />
+            <g key={`g-${h}`}>
+              <line
+                x1={CL} y1={y.toFixed(2)} x2={CR} y2={y.toFixed(2)}
+                stroke={isGoal ? '#5AC8FA' : '#1C1C26'}
+                strokeWidth={isGoal ? 0.8 : 0.5}
+                strokeDasharray={isGoal ? '4 3' : undefined}
+                opacity={isGoal ? 0.85 : 0.7}
+              />
+              <text
+                x={(CL - 3).toFixed(2)} y={y.toFixed(2)}
+                textAnchor="end" dominantBaseline="middle"
+                fill={isGoal ? '#5AC8FA' : '#3A3A48'}
+                fontSize="5.5"
+                fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
+              >{h}h</text>
+            </g>
           )
         })}
 
-        {/* ── Hour labels (along the gap between day 31 and day 1) ── */}
-        {HOUR_RINGS.map(h => {
-          const r = ringRadius(h)
-          const [x, y] = polar(r, tickAngle)
-          return (
-            <text
-              key={`hl-${h}`}
-              x={x.toFixed(2)} y={y.toFixed(2)}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fill="#3A3A3C"
-              fontSize="5.5"
-              fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
-            >
-              {h}h
-            </text>
-          )
-        })}
-
-        {/* ── Day spokes ── */}
-        {days.map(day => {
-          const ang      = dayAngle(day, daysInMonth)
-          const [x1, y1] = polar(R_CENTER, ang)
-          const [x2, y2] = polar(R_SPOKE, ang)
-          return (
-            <line
-              key={`spoke-${day}`}
-              x1={x1.toFixed(2)} y1={y1.toFixed(2)}
-              x2={x2.toFixed(2)} y2={y2.toFixed(2)}
-              stroke="#222"
-              strokeWidth="0.4"
-            />
-          )
-        })}
-
-        {/* ── Sleep polygon ── */}
-        {polygonStr && (
-          <polyline
-            points={polygonStr}
-            fill="rgba(90, 200, 250, 0.06)"
-            stroke="#5AC8FA"
-            strokeWidth="1.6"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-            style={{ animation: 'rscFade 0.8s ease both' }}
-          />
-        )}
-
-        {/* ── Day number labels + tap targets ── */}
+        {/* ── Bars ── */}
         {days.map(day => {
           const ds       = mkDate(year, month, day)
-          const ang      = dayAngle(day, daysInMonth)
-          const [x, y]   = polar(R_LABEL, ang)
-          const hasData  = !!sleepByDate[ds]?.bedtime
+          const log      = sleepByDate[ds]
           const isFuture = day > todayDay
+          const x        = CL + (day - 1) * slotW + barOffset
+
+          if (isFuture || !log?.bedtime) {
+            const ghostH   = CB - CT
+            const opacity  = isFuture ? 0.03 : 0.06
+            const rx       = (barW / 2).toFixed(2)
+            return (
+              <g key={`bar-${day}`}>
+                {/* Ghost bar full height */}
+                <rect
+                  x={x.toFixed(2)} y={CT.toFixed(2)}
+                  width={barW.toFixed(2)} height={ghostH.toFixed(2)}
+                  rx={rx}
+                  fill={`rgba(255,255,255,${opacity})`}
+                />
+                {/* Subtle edge */}
+                <rect
+                  x={x.toFixed(2)} y={CT.toFixed(2)}
+                  width={barW.toFixed(2)} height={ghostH.toFixed(2)}
+                  rx={rx}
+                  fill="none"
+                  stroke={`rgba(255,255,255,${isFuture ? 0.04 : 0.08})`}
+                  strokeWidth="0.5"
+                />
+              </g>
+            )
+          }
+
+          const hrs    = sleepHrs(log.bedtime, log.wake_time)
+          const barTop = hToY(hrs)
+          const barH   = CB - barTop
+          const color  = barColor(log.quality)
+
+          return (
+            <g
+              key={`bar-${day}`}
+              onClick={() => onDayClick(ds)}
+              style={{
+                cursor: 'pointer',
+                transformBox: 'fill-box' as const,
+                transformOrigin: 'bottom',
+                animation: `slpBar 0.35s ease ${day * 10}ms both`,
+              }}
+            >
+              {/* Bar base */}
+              <rect
+                x={x.toFixed(2)} y={barTop.toFixed(2)}
+                width={barW.toFixed(2)} height={barH.toFixed(2)}
+                rx={(barW / 2).toFixed(2)}
+                fill={color}
+                opacity="0.7"
+              />
+              {/* Vertical sheen */}
+              <rect
+                x={x.toFixed(2)} y={barTop.toFixed(2)}
+                width={barW.toFixed(2)} height={barH.toFixed(2)}
+                rx={(barW / 2).toFixed(2)}
+                fill="url(#slp-sheen-v)"
+              />
+              {/* Horizontal sheen */}
+              <rect
+                x={x.toFixed(2)} y={barTop.toFixed(2)}
+                width={barW.toFixed(2)} height={barH.toFixed(2)}
+                rx={(barW / 2).toFixed(2)}
+                fill="url(#slp-sheen-h)"
+              />
+              {/* Glass edge highlight */}
+              <rect
+                x={x.toFixed(2)} y={barTop.toFixed(2)}
+                width={barW.toFixed(2)} height={barH.toFixed(2)}
+                rx={(barW / 2).toFixed(2)}
+                fill="none"
+                stroke="rgba(255,255,255,0.18)"
+                strokeWidth="0.6"
+              />
+            </g>
+          )
+        })}
+
+        {/* ── Day labels ── */}
+        {days.map(day => {
+          const ds      = mkDate(year, month, day)
+          const cx      = CL + (day - 1) * slotW + slotW / 2
+          const isToday = isCurrentMon && day === todayDay
+
+          if (isToday) {
+            return (
+              <g key={`lbl-${day}`} onClick={() => onDayClick(ds)} style={{ cursor: 'pointer' }}>
+                <circle cx={cx.toFixed(2)} cy={LBL_Y} r={4.5} fill="#ffffff" opacity="0.75" />
+                <text
+                  x={cx.toFixed(2)} y={(LBL_Y + 1.9).toFixed(2)}
+                  textAnchor="middle"
+                  fill="#000000" fontSize="5" fontWeight="700"
+                  fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
+                >{day}</text>
+              </g>
+            )
+          }
+
+          if (!showLabel(day)) return null
 
           return (
             <text
               key={`lbl-${day}`}
-              x={x.toFixed(2)} y={y.toFixed(2)}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fill={isFuture ? '#2A2A2A' : hasData ? '#8E8E93' : '#444'}
-              fontSize="7.5"
+              x={cx.toFixed(2)} y={LBL_Y}
+              textAnchor="middle" dominantBaseline="middle"
+              fill="#3A3A48" fontSize="5.5"
               fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
-              onClick={() => !isFuture && onDayClick(ds)}
-              style={{ cursor: isFuture ? 'default' : 'pointer' }}
-            >
-              {day}
-            </text>
+              onClick={() => day < todayDay && onDayClick(ds)}
+              style={{ cursor: day < todayDay ? 'pointer' : 'default' }}
+            >{day}</text>
           )
         })}
-
-        {/* ── Data dots (colored by sleep quality) ── */}
-        {days.map(day => {
-          const ds  = mkDate(year, month, day)
-          const log = sleepByDate[ds]
-          if (!log?.bedtime || !log?.wake_time) return null
-          const ang    = dayAngle(day, daysInMonth)
-          const hrs    = sleepHrs(log.bedtime, log.wake_time)
-          const [x, y] = polar(hToR(hrs), ang)
-          return (
-            <circle
-              key={`dot-${day}`}
-              cx={x.toFixed(2)} cy={y.toFixed(2)} r="2.8"
-              fill={dotColor(log.quality)}
-              stroke="#000"
-              strokeWidth="0.4"
-              onClick={() => onDayClick(ds)}
-              style={{
-                cursor: 'pointer',
-                animation: `rscFade 0.4s ease ${day * 15}ms both`,
-              }}
-            />
-          )
-        })}
-
-        {/* ── Inner circle + moon ── */}
-        <circle
-          cx={CX} cy={CY} r={R_CENTER}
-          fill="#000"
-          stroke="#2A2A2A"
-          strokeWidth="0.8"
-        />
-        <text
-          x={CX} y={CY}
-          textAnchor="middle"
-          dominantBaseline="middle"
-          fontSize="20"
-        >
-          🌙
-        </text>
       </svg>
 
       {/* Legend */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 px-1">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 px-1">
         <div className="flex items-center gap-1.5">
           <svg width="16" height="6">
             <line x1="0" y1="3" x2="16" y2="3" stroke="#5AC8FA" strokeWidth="1.5" strokeDasharray="4 3" />
@@ -265,8 +256,8 @@ export function RadialSleepChart({ sleepByDate, year, month, onDayClick }: Props
         </div>
         {([
           { color: '#5AC8FA', label: 'Great (4–5)' },
-          { color: '#3A8FA8', label: 'OK (3)' },
-          { color: '#1E5F7A', label: 'Poor (1–2)' },
+          { color: '#3A8FA8', label: 'OK (3)'       },
+          { color: '#1E5F7A', label: 'Poor (1–2)'   },
         ] as const).map(({ color, label }) => (
           <div key={label} className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />

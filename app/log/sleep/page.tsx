@@ -355,7 +355,7 @@ function SleepContent() {
                   {/* Day number */}
                   <span
                     className="w-6 text-right text-xs shrink-0 font-medium"
-                    style={{ color: isToday ? '#ffffff' : '#636366' }}
+                    style={{ color: isToday ? '#ffffff' : '#7A7A86' }}
                   >
                     {dayNum}
                   </span>

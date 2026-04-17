@@ -87,16 +87,31 @@ export function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 glass-strong">
-      <nav className="flex justify-around px-2 pt-2 pb-6">
+    <div className="fixed bottom-0 left-0 right-0 z-[100] px-4 pb-6 pt-2"
+      style={{
+        background: 'linear-gradient(to top, rgba(5,5,7,0.95) 60%, transparent)',
+      }}>
+      <nav
+        className="flex justify-around items-center px-2 py-2 rounded-2xl"
+        style={{
+          background: 'rgba(255,255,255,0.06)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          border: '1px solid rgba(255,255,255,0.09)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 32px rgba(0,0,0,0.4)',
+        }}>
         {tabs.map(({ href, label, icon, color }) => {
           const active = pathname === href || pathname.startsWith(href + '/')
           return (
             <Link key={href} href={href}
-              className="flex flex-col items-center gap-0.5 min-w-[60px]">
+              className="flex flex-col items-center gap-0.5 min-w-[52px] py-1 px-3 rounded-xl transition-all"
+              style={active ? {
+                background: `${color}18`,
+                boxShadow: `0 0 12px ${color}22`,
+              } : {}}>
               {icon(active, color)}
               <span className="text-[10px] font-medium"
-                style={{ color: active ? color : '#8E8E93' }}>
+                style={{ color: active ? color : '#5A5A68' }}>
                 {label}
               </span>
             </Link>
