@@ -288,13 +288,11 @@ export default function SummaryPage() {
                     label="DAYS LOGGED"
                     value={`${trackedDays}`}
                     sub={`of ${todayDay} days`}
-                    color="var(--char-accent)"
                   />
                   <PremiumStatCard
                     label="AVG DONE"
                     value={`${avgCompletion}%`}
                     sub="completion"
-                    color="var(--char-accent)"
                   />
                 </div>
                 {sortedHabits.length > 0 && (
@@ -307,7 +305,6 @@ export default function SummaryPage() {
                         isLast={rank === sortedHabits.length - 1}
                         year={year}
                         month={month}
-                        daysInMonth={daysInMonth}
                         todayDay={todayDay}
                         habitByDate={habitByDate}
                         onSelect={() => setSelectedHabit(habit)}
@@ -343,13 +340,13 @@ export default function SummaryPage() {
             <div className="px-5 mt-6 flex flex-col gap-4">
               <div className="grid grid-cols-2 gap-3">
                 <StatCard label="Avg sleep" value={avgSleep > 0 ? fmtHrs(avgSleep) : '—'}
-                  sub="per night" color="#5AC8FA" />
+                  sub="per night" />
                 <StatCard label="Days logged" value={`${sleepTracked}`}
-                  sub={`of ${todayDay} days`} color="#5AC8FA" />
+                  sub={`of ${todayDay} days`} />
                 <StatCard label="Avg quality" value={avgQuality > 0 ? avgQuality.toFixed(1) : '—'}
-                  sub="out of 5" color="#5AC8FA" />
+                  sub="out of 5" />
                 <StatCard label="Goal nights" value={`${goalNights}`}
-                  sub="8h or more" color="#5AC8FA" />
+                  sub="8h or more" />
               </div>
               {sleepScore.nightsLogged > 0 && (
                 <SleepScoreCard
@@ -364,13 +361,13 @@ export default function SummaryPage() {
             <div className="px-5 mt-6 flex flex-col gap-4">
               <div className="grid grid-cols-2 gap-3">
                 <StatCard label="Days logged" value={`${moodTracked}`}
-                  sub={`of ${todayDay} days`} color="#BF5AF2" />
+                  sub={`of ${todayDay} days`} />
                 <StatCard label="Avg mood" value={avgMood > 0 ? avgMood.toFixed(1) : '—'}
-                  sub="out of 5" color="#BF5AF2" />
+                  sub="out of 5" />
                 <StatCard label="Best mood" value={topMood > 0 ? MOOD_EMOJI[topMood] : '—'}
-                  sub={topMood > 0 ? MOOD_LABELS[topMood] : 'no data'} color="#BF5AF2" />
+                  sub={topMood > 0 ? MOOD_LABELS[topMood] : 'no data'} />
                 <StatCard label="This month" value={moodTracked > 0 ? `${Math.round(moodTracked / todayDay * 100)}%` : '—'}
-                  sub="days tracked" color="#BF5AF2" />
+                  sub="days tracked" />
               </div>
               <button
                 onClick={() => router.push('/log/mood')}
@@ -404,12 +401,11 @@ export default function SummaryPage() {
 }
 
 function HabitCard({
-  habit, year, month, daysInMonth: _daysInMonth, todayDay, habitByDate, onSelect, rank, isLast,
+  habit, year, month, todayDay, habitByDate, onSelect, rank, isLast,
 }: {
   habit: string
   year: number
   month: number
-  daysInMonth: number
   todayDay: number
   habitByDate: Record<string, Record<string, boolean>>
   onSelect: () => void
@@ -436,8 +432,8 @@ function HabitCard({
   )
 }
 
-function StatCard({ label, value, sub, color: _color }: {
-  label: string; value: string; sub: string; color: string
+function StatCard({ label, value, sub }: {
+  label: string; value: string; sub: string
 }) {
   return (
     <div className="rounded-[20px] px-4 py-4" style={GLASS_CARD_STYLE}>
@@ -448,8 +444,8 @@ function StatCard({ label, value, sub, color: _color }: {
   )
 }
 
-function PremiumStatCard({ label, value, sub, color: _color }: {
-  label: string; value: string; sub: string; color: string
+function PremiumStatCard({ label, value, sub }: {
+  label: string; value: string; sub: string
 }) {
   return (
     <div className="rounded-[20px] px-4 py-4" style={GLASS_CARD_STYLE}>

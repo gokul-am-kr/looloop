@@ -14,7 +14,6 @@ const R_START   = 40   // inner radius of innermost ring — larger = bigger cha
 const GAP_DEG   = 0.18 * (180 / Math.PI)   // ≈ 10.31°
 const FAN_START = 90 + GAP_DEG / 2           // ≈ 95.16°
 const FAN_SPAN  = 360 - GAP_DEG              // ≈ 349.69°
-const FAN_END   = FAN_START + FAN_SPAN        // ≈ 444.85°
 
 const MARGIN    = 14   // margin around full ring
 const NUM_INSET = 12   // offset for day-number labels past ring edge
@@ -122,7 +121,7 @@ export function RadialHabitChart({ habitNames, habitByDate, year, month, edition
   const centerDay   = now.getDate().toString()
   const centerMonth = now.toLocaleString('en-IN', { month: 'short' }).toUpperCase()
 
-  const _emoji = CHAR_EMOJI[edition] ?? '🐱'   // unused visually but keeps prop meaningful
+
 
   // Circular plate covers exactly the ring area — labels (at labelR) float outside it
   const platePct = (2 * ringEdge) / vbSize * 100
