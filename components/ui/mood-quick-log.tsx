@@ -56,27 +56,31 @@ export function MoodQuickLog({ userId, date, initialMood }: Props) {
             <button
               key={m}
               onClick={() => tap(m)}
-              className="flex-1 flex flex-col items-center gap-1.5 transition-all active:scale-95"
+              className="flex-1 flex flex-col items-center gap-1.5 active:scale-95"
               style={{
-                borderRadius: 16,
-                padding: '10px 8px',
-                opacity: saving && mood !== m ? 0.5 : 1,
-                background: active
-                  ? 'linear-gradient(135deg, rgba(255,255,255,0.16), rgba(255,255,255,0.06))'
-                  : 'rgba(255,255,255,0.06)',
-                borderTop: active ? '0.5px solid rgba(255,255,255,0.30)' : '0.5px solid rgba(255,255,255,0.12)',
-                borderLeft: active ? '0.5px solid rgba(255,255,255,0.18)' : '0.5px solid rgba(255,255,255,0.12)',
-                borderRight: active ? '0.5px solid rgba(255,255,255,0.05)' : '0.5px solid rgba(255,255,255,0.12)',
-                borderBottom: active ? '0.5px solid rgba(255,255,255,0.05)' : '0.5px solid rgba(255,255,255,0.12)',
+                borderRadius: 14,
+                padding: '10px 6px',
+                transition: 'transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease',
+                transform: active ? 'scale(1.08)' : 'scale(1)',
+                opacity: saving && !active ? 0.4 : 1,
+                background: active ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.04)',
+                border: active ? '1px solid rgba(255,255,255,0.45)' : '0.5px solid rgba(255,255,255,0.08)',
                 boxShadow: active
-                  ? '0 6px 20px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.15)'
-                  : '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)',
+                  ? '0 0 0 2px var(--accent-glow), 0 8px 20px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.30)'
+                  : 'none',
               }}
             >
-              <span className="text-xl leading-none">{MOOD_EMOJI[m]}</span>
-              <span className="text-[9px]" style={{
-                color: active ? 'var(--accent)' : 'rgba(255,255,255,0.4)',
-                fontWeight: active ? 500 : 400,
+              <span style={{
+                fontSize: active ? 24 : 18,
+                lineHeight: 1,
+                opacity: active ? 1 : 0.55,
+                transition: 'font-size 0.15s ease, opacity 0.15s ease',
+              }}>{MOOD_EMOJI[m]}</span>
+              <span style={{
+                fontSize: 9,
+                color: active ? '#ffffff' : 'rgba(255,255,255,0.25)',
+                fontWeight: active ? 700 : 400,
+                transition: 'color 0.15s ease',
               }}>
                 {MOOD_LABELS[m]}
               </span>

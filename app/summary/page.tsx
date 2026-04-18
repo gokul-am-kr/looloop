@@ -87,7 +87,7 @@ export default function SummaryPage() {
   const [sleepLogs, setSleepLogs]     = useState<SleepLog[]>([])
   const [moodLogs, setMoodLogs]       = useState<MoodLog[]>([])
   const [loading, setLoading]         = useState(true)
-  const [selectedHabit, setSelectedHabit] = useState<string | null>(null)
+  const [selectedHabitIdx, setSelectedHabitIdx] = useState<number | null>(null)
 
   const supabase    = createBrowserClient()
   const initialized = useRef(false)
@@ -204,7 +204,7 @@ export default function SummaryPage() {
         <div className="flex items-center justify-between">
           <button onClick={prevMonth}
             className="w-8 h-8 flex items-center justify-center rounded-full transition-colors"
-            style={{ color: '#7A7A86' }}>
+            style={{ color: 'rgba(255,255,255,0.35)' }}>
             <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
               <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="1.6"
                 strokeLinecap="round" strokeLinejoin="round" />
@@ -212,22 +212,33 @@ export default function SummaryPage() {
           </button>
 
           <div className="text-center">
-            <p className="text-white font-light tracking-widest text-sm uppercase"
-              style={{ letterSpacing: '0.18em' }}>{monthLabel}</p>
+            <p style={{
+              fontSize: 13, fontWeight: 500, letterSpacing: '0.10em',
+              textTransform: 'uppercase', color: 'rgba(255,255,255,0.70)',
+            }}>{monthLabel}</p>
           </div>
 
           <div className="flex items-center gap-1">
             <button onClick={nextMonth} disabled={isCurrentMonth}
               className="w-8 h-8 flex items-center justify-center rounded-full transition-colors"
-              style={{ color: isCurrentMonth ? '#2A2A32' : '#7A7A86' }}>
+              style={{ color: isCurrentMonth ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.35)' }}>
               <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                 <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" strokeWidth="1.6"
                   strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
             <button onClick={() => router.push('/summary/week')}
-              className="text-[10px] px-2.5 py-1 rounded-lg font-medium tracking-wide"
-              style={{ background: 'rgba(255,255,255,0.05)', color: '#7A7A86', border: '1px solid rgba(255,255,255,0.06)' }}>
+              style={{
+                fontSize: 12, fontWeight: 400, letterSpacing: '0.01em',
+                padding: '6px 14px', borderRadius: 20,
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04))',
+                borderTop: '0.5px solid rgba(255,255,255,0.22)',
+                borderLeft: '0.5px solid rgba(255,255,255,0.14)',
+                borderRight: '0.5px solid rgba(255,255,255,0.04)',
+                borderBottom: '0.5px solid rgba(255,255,255,0.04)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.10)',
+                color: 'rgba(255,255,255,0.60)',
+              }}>
               Weekly
             </button>
           </div>
@@ -306,7 +317,7 @@ export default function SummaryPage() {
                         month={month}
                         todayDay={todayDay}
                         habitByDate={habitByDate}
-                        onSelect={() => setSelectedHabit(habit)}
+                        onSelect={() => setSelectedHabitIdx(rank)}
                       />
                     ))}
                   </div>
@@ -370,8 +381,12 @@ export default function SummaryPage() {
               </div>
               <button
                 onClick={() => router.push('/log/mood')}
-                className="w-full rounded-2xl py-3.5 text-sm font-semibold text-black"
-                style={{ background: '#BF5AF2' }}
+                className="w-full rounded-2xl py-3.5 text-sm font-semibold"
+                style={{
+                  background: 'linear-gradient(135deg, hsl(var(--hue),80%,78%), hsl(var(--hue),70%,62%))',
+                  color: 'hsl(var(--hue),45%,10%)',
+                  boxShadow: '0 4px 20px hsla(var(--hue),70%,55%,0.40)',
+                }}
               >
                 Log today&apos;s mood
               </button>
@@ -381,16 +396,17 @@ export default function SummaryPage() {
       )}
 
       {/* Per-habit detail sheet */}
-      {selectedHabit !== null && (
+      {selectedHabitIdx !== null && (
         <HabitDetailSheet
-          habit={selectedHabit}
+          habits={sortedHabits}
+          initialIndex={selectedHabitIdx}
           year={year}
           month={month}
           monthLabel={monthLabel}
           daysInMonth={daysInMonth}
           todayDay={todayDay}
           habitByDate={habitByDate}
-          onClose={() => setSelectedHabit(null)}
+          onClose={() => setSelectedHabitIdx(null)}
         />
       )}
 
@@ -426,7 +442,7 @@ function HabitCard({
     >
       <div style={{ width: 11, height: 11, borderRadius: '50%', flexShrink: 0, background: dot.color, boxShadow: dot.glow }} />
       <p className="flex-1 text-sm font-medium truncate" style={{ color: 'rgba(255,255,255,0.88)' }}>{habit}</p>
-      <p className="text-sm font-medium shrink-0" style={{ color: 'rgba(255,255,255,0.35)' }}>{pct}%</p>
+      <p className="text-sm font-medium shrink-0" style={{ color: 'rgba(255,255,255,0.60)' }}>{pct}%</p>
     </div>
   )
 }
@@ -504,9 +520,10 @@ function computeHabitStreak(
 
 
 function HabitDetailSheet({
-  habit, year, month, monthLabel, daysInMonth, todayDay, habitByDate, onClose,
+  habits, initialIndex, year, month, monthLabel, daysInMonth, todayDay, habitByDate, onClose,
 }: {
-  habit: string
+  habits: string[]
+  initialIndex: number
   year: number
   month: number
   monthLabel: string
@@ -515,6 +532,23 @@ function HabitDetailSheet({
   habitByDate: Record<string, Record<string, boolean>>
   onClose: () => void
 }) {
+  const [idx, setIdx] = useState(initialIndex)
+  const touchStartX   = useRef<number>(0)
+  const habit         = habits[idx]
+  const total         = habits.length
+
+  function prev() { setIdx(i => Math.max(0, i - 1)) }
+  function next() { setIdx(i => Math.min(total - 1, i + 1)) }
+
+  function onTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.touches[0].clientX
+  }
+  function onTouchEnd(e: React.TouchEvent) {
+    const delta = e.changedTouches[0].clientX - touchStartX.current
+    if (delta < -50) next()
+    else if (delta > 50) prev()
+  }
+
   const daysDone   = Array.from({ length: todayDay }, (_, i) => i + 1)
     .filter(d => {
       const ds = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
@@ -524,148 +558,287 @@ function HabitDetailSheet({
   const bestStreak = computeHabitStreak(habit, habitByDate, year, month, daysInMonth, todayDay)
 
   // Fan chart geometry
-  const anglePerDay   = SF_SPAN / daysInMonth
-  const days          = Array.from({ length: daysInMonth }, (_, i) => i + 1)
-  const showLbl       = (d: number) => d === 1 || d % 5 === 0 || d === daysInMonth
-  const CX            = SF_R2 + 8
-  const CY            = Math.ceil(SF_R2 * Math.sin((SF_START * Math.PI) / 180)) + 16
-  const vbW           = CX + 72   // room for completion label on right
-  const vbH           = CY + SF_R2 + 16
+  const anglePerDay = SF_SPAN / daysInMonth
+  const days        = Array.from({ length: daysInMonth }, (_, i) => i + 1)
+  const showLbl     = (d: number) => d === 1 || d % 5 === 0 || d === daysInMonth
+  const CX          = SF_R2 + 8
+  const CY          = Math.ceil(SF_R2 * Math.sin((SF_START * Math.PI) / 180)) + 16
+  const vbW         = CX + 72
+  const vbH         = CY + SF_R2 + 16
 
   return (
     <>
       {/* Backdrop */}
       <div
         className="fixed inset-0 z-40"
-        style={{ background: 'rgba(0,0,0,0.5)' }}
+        style={{ background: 'rgba(7,5,26,0.65)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}
         onClick={onClose}
       />
+
       {/* Sheet */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl px-4 pt-4 pb-8"
+        className="fixed bottom-0 left-0 right-0 z-50"
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
         style={{
-          background: 'rgba(5,5,7,0.92)',
-          backdropFilter: 'blur(48px) saturate(200%)',
-          WebkitBackdropFilter: 'blur(48px) saturate(200%)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          maxHeight: '58vh',
+          borderTopLeftRadius: 28,
+          borderTopRightRadius: 28,
+          borderTop: '0.5px solid rgba(255,255,255,0.18)',
+          borderLeft: '0.5px solid rgba(255,255,255,0.10)',
+          borderRight: '0.5px solid rgba(255,255,255,0.10)',
+          background: 'linear-gradient(180deg, hsl(var(--hue),40%,12%) 0%, hsl(var(--hue),45%,8%) 100%)',
+          boxShadow: '0 -12px 60px rgba(0,0,0,0.70), 0 -4px 20px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.12)',
+          backdropFilter: 'blur(40px)',
+          WebkitBackdropFilter: 'blur(40px)',
+          padding: '12px 22px 40px',
+          maxHeight: '62vh',
           overflowY: 'auto',
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
-        {/* Handle */}
-        <div className="w-8 h-1 rounded-full mx-auto mb-3" style={{ background: 'rgba(255,255,255,0.15)' }} />
+        {/* Depth orb */}
+        <div style={{
+          position: 'absolute', top: -40, left: -40,
+          width: 200, height: 200, borderRadius: '50%',
+          background: 'hsl(var(--hue),60%,55%)',
+          opacity: 0.25, filter: 'blur(60px)',
+          pointerEvents: 'none', zIndex: 0,
+        }} />
 
-        {/* Header */}
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <p className="text-white text-base font-bold truncate">{habit}</p>
-            <p className="text-[11px] text-muted">{monthLabel}</p>
-          </div>
-          <button onClick={onClose} className="w-7 h-7 flex items-center justify-center text-muted">
-            <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
-              <path d="M15 5L5 15M5 5l10 10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-            </svg>
-          </button>
-        </div>
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          {/* Drag handle */}
+          <div style={{
+            width: 36, height: 4, borderRadius: 2,
+            background: 'rgba(255,255,255,0.18)',
+            margin: '0 auto 20px',
+          }} />
 
-        {/* Stats + chart side by side */}
-        <div className="flex items-center gap-3">
-          {/* Fan chart — constrained width */}
-          <div style={{ width: '52%', flexShrink: 0 }}>
-            <svg
-              viewBox={`0 0 ${vbW} ${vbH}`}
-              width="100%"
-              style={{ overflow: 'visible' }}
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+            {/* Prev arrow */}
+            <button
+              onClick={prev}
+              disabled={idx === 0}
+              style={{
+                width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                background: idx === 0 ? 'transparent' : 'rgba(255,255,255,0.08)',
+                border: idx === 0 ? 'none' : '0.5px solid rgba(255,255,255,0.14)',
+                color: idx === 0 ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.55)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: idx === 0 ? 'default' : 'pointer',
+                marginTop: 4,
+              }}
             >
+              <svg width="12" height="12" viewBox="0 0 20 20" fill="none">
+                <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
 
-          {days.map((day) => {
-            const a1       = SF_START + (day - 1) * anglePerDay
-            const a2       = SF_START + day * anglePerDay
-            const aMid     = SF_START + (day - 0.5) * anglePerDay
-            const ds       = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-            const done     = habitByDate[ds]?.[habit] ?? false
-            const isFuture = day > todayDay
-            const [lx, ly] = sfXY(CX, CY, SF_RLBL, aMid)
-            return (
-              <g key={day}>
-                <path
-                  d={sfSeg(CX, CY, a1, a2)}
-                  fill={isFuture ? '#111111' : done ? 'var(--char-accent)' : '#2C2C2E'}
-                  stroke="#000"
-                  strokeWidth="0.6"
-                />
-                {showLbl(day) && (
-                  <text
-                    x={lx} y={ly}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fill="#7A7A86"
-                    fontSize="6"
-                    fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
-                  >
-                    {day}
-                  </text>
-                )}
-              </g>
-            )
-          })}
+            {/* Title + dots */}
+            <div style={{ flex: 1, minWidth: 0, paddingLeft: 10, paddingRight: 10 }}>
+              <p style={{ fontSize: 20, fontWeight: 500, color: '#ffffff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center' }}>
+                {habit}
+              </p>
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 2, textAlign: 'center' }}>{monthLabel}</p>
+              {/* Dot indicators */}
+              {total > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 5, marginTop: 10 }}>
+                  {habits.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setIdx(i)}
+                      style={{
+                        width: i === idx ? 18 : 6,
+                        height: 6,
+                        borderRadius: 3,
+                        background: i === idx
+                          ? 'hsl(var(--hue),80%,82%)'
+                          : 'rgba(255,255,255,0.18)',
+                        boxShadow: i === idx ? '0 0 6px hsla(var(--hue),80%,80%,0.5)' : 'none',
+                        transition: 'width 0.2s ease, background 0.2s ease',
+                        cursor: 'pointer',
+                        border: 'none',
+                        padding: 0,
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
 
-          {/* Completion % at pivot */}
-          <text
-            x={CX} y={CY - 5}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            style={{ fill: 'var(--char-accent)' }}
-            fontSize="11"
-            fontWeight="700"
-            fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
-          >
-            {pct}%
-          </text>
-          <text
-            x={CX} y={CY + 7}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            fill="#7A7A86"
-            fontSize="6.5"
-            fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
-          >
-            done
-          </text>
-            </svg>
+            {/* Next arrow / close */}
+            {idx < total - 1 ? (
+              <button
+                onClick={next}
+                style={{
+                  width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '0.5px solid rgba(255,255,255,0.14)',
+                  color: 'rgba(255,255,255,0.55)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer',
+                  marginTop: 4,
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 20 20" fill="none">
+                  <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            ) : (
+              <button
+                onClick={onClose}
+                style={{
+                  width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '0.5px solid rgba(255,255,255,0.14)',
+                  color: 'rgba(255,255,255,0.50)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                  cursor: 'pointer',
+                  marginTop: 4,
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 20 20" fill="none">
+                  <path d="M15 5L5 15M5 5l10 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </button>
+            )}
           </div>
 
-          {/* Side stats */}
-          <div className="flex-1 flex flex-col gap-3">
-            {[
-              { label: 'Completion', value: `${pct}%`, accent: true },
-              { label: 'Days done',  value: `${daysDone}/${todayDay}`, accent: false },
-              { label: 'Best streak', value: `${bestStreak}d`, accent: false },
-            ].map(({ label, value, accent }) => (
-              <div key={label} className="rounded-xl px-3 py-2.5"
-                style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.07)',
-                }}>
-                <p className="text-[9px] text-muted uppercase tracking-widest">{label}</p>
-                <p className="text-lg font-bold leading-tight mt-0.5"
-                  style={{ color: accent ? 'var(--char-accent)' : '#fff' }}>{value}</p>
-              </div>
-            ))}
+          {/* Two-column layout */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, alignItems: 'start' }}>
 
-            {/* Legend */}
-            <div className="flex flex-col gap-1 mt-1">
+            {/* Left — fan chart */}
+            <div>
+              <svg viewBox={`0 0 ${vbW} ${vbH}`} width="100%" style={{ overflow: 'visible' }}>
+                <defs>
+                  <filter id="segGlow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="2" in="SourceGraphic" result="blur" />
+                    <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                  </filter>
+                </defs>
+
+                {days.map((day) => {
+                  const a1       = SF_START + (day - 1) * anglePerDay
+                  const a2       = SF_START + day * anglePerDay
+                  const aMid     = SF_START + (day - 0.5) * anglePerDay
+                  const ds       = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+                  const done     = habitByDate[ds]?.[habit] ?? false
+                  const isFuture = day > todayDay
+                  const [lx, ly] = sfXY(CX, CY, SF_RLBL, aMid)
+                  return (
+                    <g key={day}>
+                      <path
+                        d={sfSeg(CX, CY, a1, a2)}
+                        style={{
+                          fill: isFuture
+                            ? 'rgba(255,255,255,0.03)'
+                            : done
+                              ? 'hsl(var(--hue),80%,88%)'
+                              : 'rgba(255,255,255,0.06)',
+                        }}
+                        stroke="rgba(0,0,0,0.25)"
+                        strokeWidth="0.5"
+                        filter={done && !isFuture ? 'url(#segGlow)' : undefined}
+                      />
+                      {showLbl(day) && (
+                        <text
+                          x={lx} y={ly}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          fill="rgba(255,255,255,0.25)"
+                          fontSize="6"
+                          fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
+                        >
+                          {day}
+                        </text>
+                      )}
+                    </g>
+                  )
+                })}
+
+                {/* Center background circle for contrast */}
+                <circle cx={CX} cy={CY} r={22}
+                  style={{ fill: 'hsl(var(--hue),45%,10%)' }}
+                  stroke="rgba(255,255,255,0.10)" strokeWidth="0.5"
+                />
+                {/* Center % */}
+                <text
+                  x={CX} y={CY - 4}
+                  textAnchor="middle" dominantBaseline="middle"
+                  fill="#ffffff" fontSize="16" fontWeight="600"
+                  fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
+                >
+                  {pct}%
+                </text>
+                <text
+                  x={CX} y={CY + 9}
+                  textAnchor="middle" dominantBaseline="middle"
+                  fill="rgba(255,255,255,0.40)" fontSize="7"
+                  fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
+                >
+                  done
+                </text>
+              </svg>
+
+              {/* Legend */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginTop: 8 }}>
+                {[
+                  { label: 'Done',   bg: 'hsl(var(--hue),80%,88%)', glow: true },
+                  { label: 'Missed', bg: 'rgba(255,255,255,0.06)',   glow: false },
+                  { label: 'Future', bg: 'rgba(255,255,255,0.03)',   glow: false },
+                ].map(({ label, bg, glow }) => (
+                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{
+                      width: 8, height: 8, borderRadius: 2, flexShrink: 0,
+                      background: bg,
+                      boxShadow: glow ? '0 0 5px hsla(var(--hue),80%,80%,0.6)' : 'none',
+                      border: glow ? 'none' : '0.5px solid rgba(255,255,255,0.12)',
+                    }} />
+                    <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>{label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right — stat cards */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
               {[
-                { label: 'Done',   bg: 'var(--char-accent)' },
-                { label: 'Missed', bg: '#2C2C2E' },
-                { label: 'Future', bg: '#111111' },
-              ].map(({ label, bg }) => (
-                <div key={label} className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-sm" style={{ background: bg }} />
-                  <span className="text-[10px] text-muted">{label}</span>
+                { label: 'Completion', value: `${pct}%` },
+                { label: 'Days Done',  value: `${daysDone}/${todayDay}` },
+                { label: 'Best Streak', value: `${bestStreak}d` },
+              ].map(({ label, value }, idx) => (
+                <div
+                  key={label}
+                  style={{
+                    background: 'linear-gradient(145deg, rgba(255,255,255,0.11), rgba(255,255,255,0.04))',
+                    borderTop: '0.5px solid rgba(255,255,255,0.24)',
+                    borderLeft: '0.5px solid rgba(255,255,255,0.16)',
+                    borderRight: '0.5px solid rgba(255,255,255,0.04)',
+                    borderBottom: '0.5px solid rgba(255,255,255,0.04)',
+                    boxShadow: '0 8px 28px rgba(0,0,0,0.50), 0 2px 8px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.12)',
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                    borderRadius: 16,
+                    padding: '12px 14px',
+                    marginBottom: idx < 2 ? 8 : 0,
+                  }}
+                >
+                  <p style={{
+                    fontSize: 9, color: 'rgba(255,255,255,0.40)',
+                    letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4,
+                  }}>{label}</p>
+                  <p style={{
+                    fontSize: 22, fontWeight: 500,
+                    color: 'var(--accent)',
+                    textShadow: '0 0 12px hsla(var(--hue),70%,80%,0.4)',
+                    lineHeight: 1,
+                  }}>{value}</p>
                 </div>
               ))}
             </div>
+
           </div>
         </div>
       </div>

@@ -11,6 +11,28 @@ import { WeekStrip } from '@/components/ui/week-strip'
 import { MoodQuickLog } from '@/components/ui/mood-quick-log'
 
 
+function MiniRing({ progress, color, filterId }: { progress: number; color: string; filterId: string }) {
+  const r    = 14
+  const circ = 2 * Math.PI * r
+  const offset = circ * (1 - Math.min(Math.max(progress, 0), 1))
+  return (
+    <svg width={36} height={36} style={{ transform: 'rotate(-90deg)', flexShrink: 0 }}>
+      <defs>
+        <filter id={filterId} x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="2" in="SourceGraphic" result="blur" />
+          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+      </defs>
+      <circle cx={18} cy={18} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={3} />
+      <circle cx={18} cy={18} r={r} fill="none"
+        stroke={color} strokeWidth={3} strokeLinecap="round"
+        strokeDasharray={circ} strokeDashoffset={offset}
+        filter={`url(#${filterId})`}
+      />
+    </svg>
+  )
+}
+
 function formattedToday(): string {
   return new Date().toLocaleDateString('en-IN', {
     weekday: 'long', day: 'numeric', month: 'short',
@@ -199,46 +221,63 @@ export default async function DashboardPage() {
 
         {/* Metric cards */}
         <div className="px-5 mt-8 flex flex-col gap-2.5">
-          <Link href="/log/habits" className="rounded-[18px] px-5 py-4 flex items-center justify-between" style={CARD_STYLE}>
-            <div>
-              <p className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Habits</p>
-              <p className="text-white text-3xl font-bold mt-1 leading-none">
-                {todayDone}
-                <span className="text-lg font-medium" style={{ color: 'rgba(255,255,255,0.35)' }}>/{totalHabits}</span>
-              </p>
-              {totalHabits === 0 && <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.35)' }}>Tap to set up your habits</p>}
-            </div>
-            <div className="w-9 h-9 rounded-full flex items-center justify-center" style={ICON_CIRCLE}>
-              <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-                <path d="M2 9l4.5 4.5L16 4" strokeWidth="2"
-                  strokeLinecap="round" strokeLinejoin="round" stroke="var(--accent)" />
-              </svg>
-            </div>
-          </Link>
+          {/* Habits + Sleep side by side */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            {/* Habits card */}
+            <Link href="/log/habits" style={{
+              ...CARD_STYLE,
+              borderRadius: 18,
+              padding: '14px 16px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 10,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <p style={{ color: 'var(--accent)', fontSize: 10, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Habits</p>
+                <MiniRing progress={habitProgress} color="hsl(var(--hue),85%,92%)" filterId="miniGlowHabits" />
+              </div>
+              <div>
+                <p style={{ fontSize: 22, fontWeight: 500, color: '#ffffff', lineHeight: 1 }}>
+                  {todayDone}<span style={{ fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.35)' }}>/{totalHabits}</span>
+                </p>
+                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>
+                  {totalHabits === 0 ? 'Tap to set up' : `${totalHabits - todayDone} remaining`}
+                </p>
+              </div>
+            </Link>
 
-          <Link href="/log/sleep" className="rounded-[18px] px-5 py-4 flex items-center justify-between" style={CARD_STYLE}>
-            <div>
-              <p className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Sleep</p>
-              {sleepHrs > 0 ? (
-                <>
-                  <p className="text-white text-3xl font-bold mt-1 leading-none">
-                    {formatSleepHrs(sleepHrs)}
-                  </p>
-                  <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                    Quality {lastSleep?.quality}/5 · {sleepHrs >= 8 ? 'Goal hit' : `${formatSleepHrs(8 - sleepHrs)} short`}
-                  </p>
-                </>
-              ) : (
-                <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.35)' }}>Log last night&apos;s sleep</p>
-              )}
-            </div>
-            <div className="w-9 h-9 rounded-full flex items-center justify-center" style={ICON_CIRCLE}>
-              <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-                <path d="M15.5 9.66A7.5 7.5 0 1 1 8.34 2.5 5.5 5.5 0 0 0 15.5 9.66z"
-                  stroke="var(--accent)" strokeWidth="1.6" strokeLinecap="round" />
-              </svg>
-            </div>
-          </Link>
+            {/* Sleep card */}
+            <Link href="/log/sleep" style={{
+              ...CARD_STYLE,
+              borderRadius: 18,
+              padding: '14px 16px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 10,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <p style={{ color: 'var(--accent)', fontSize: 10, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Sleep</p>
+                <MiniRing progress={Math.min(sleepProgress, 1)} color="hsl(var(--hue),70%,80%)" filterId="miniGlowSleep" />
+              </div>
+              <div>
+                {sleepHrs > 0 ? (
+                  <>
+                    <p style={{ fontSize: 22, fontWeight: 500, color: '#ffffff', lineHeight: 1 }}>
+                      {formatSleepHrs(sleepHrs)}
+                    </p>
+                    <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>
+                      {sleepHrs >= 8 ? 'Goal hit' : `${formatSleepHrs(8 - sleepHrs)} short`}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p style={{ fontSize: 22, fontWeight: 500, color: 'rgba(255,255,255,0.25)', lineHeight: 1 }}>—</p>
+                    <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>Log last night</p>
+                  </>
+                )}
+              </div>
+            </Link>
+          </div>
 
           <MoodQuickLog
             userId={user.id}
