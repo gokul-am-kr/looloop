@@ -132,11 +132,6 @@ export default async function DashboardPage() {
     WebkitBackdropFilter: 'blur(24px)',
   } as const
 
-  const ICON_CIRCLE = {
-    background: 'linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.05))',
-    border: '0.5px solid rgba(255,255,255,0.20)',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
-  } as const
 
   return (
     <main className="min-h-screen relative" style={{ background: 'var(--bg)', overflow: 'clip', paddingBottom: 140 }}>
