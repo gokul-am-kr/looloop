@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { createBrowserClient } from '@/lib/supabase'
 
 export default function AuthPage() {
@@ -9,6 +10,7 @@ export default function AuthPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [oauthLoading, setOauthLoading] = useState<'google' | 'apple' | null>(null)
+  const [inputFocused, setInputFocused] = useState(false)
 
   const supabase = createBrowserClient()
   const isDev = process.env.NODE_ENV === 'development'
@@ -48,17 +50,32 @@ export default function AuthPage() {
 
   if (submitted) {
     return (
-      <main className="flex min-h-screen items-center justify-center px-8">
-        <div className="max-w-sm text-center">
-          <div className="glass w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6">
+      <main style={pageStyle}>
+        <Orbs />
+        <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 360, padding: '0 28px' }}>
+          <div style={{
+            width: 56, height: 56, borderRadius: 16, margin: '0 auto 24px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'linear-gradient(145deg, rgba(255,255,255,0.13), rgba(255,255,255,0.04))',
+            borderTop: '0.5px solid rgba(255,255,255,0.28)',
+            borderLeft: '0.5px solid rgba(255,255,255,0.18)',
+            borderRight: '0.5px solid rgba(255,255,255,0.05)',
+            borderBottom: '0.5px solid rgba(255,255,255,0.05)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+          }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M3 8l7.89 5.26a2 2 0 0 0 2.22 0L21 8M5 19h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"
-                stroke="#8E8E93" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              <path
+                d="M3 8l7.89 5.26a2 2 0 0 0 2.22 0L21 8M5 19h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"
+                stroke="rgba(255,255,255,0.6)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"
+              />
             </svg>
           </div>
-          <p className="text-xl font-semibold text-white">Check your email</p>
-          <p className="mt-2 text-sm text-muted leading-relaxed">
-            We sent a magic link to <span className="text-white">{email}</span>
+          <p style={{ fontSize: 20, fontWeight: 600, color: '#ffffff', fontFamily: "'DM Sans', sans-serif", margin: 0 }}>
+            Check your email
+          </p>
+          <p style={{ marginTop: 8, fontSize: 14, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, fontFamily: "'DM Sans', sans-serif" }}>
+            We sent a magic link to <span style={{ color: '#ffffff' }}>{email}</span>
           </p>
         </div>
       </main>
@@ -68,68 +85,291 @@ export default function AuthPage() {
   const busy = oauthLoading !== null || loading
 
   return (
-    <main className="flex min-h-screen flex-col justify-between px-6 pt-20 pb-12">
-      {/* Brand */}
-      <div>
-        <p className="text-[11px] font-medium tracking-widest text-muted uppercase">Looloop by Doo Doodle</p>
-        <h1 className="mt-3 text-4xl font-bold text-white leading-tight tracking-tight">
-          Close the<br />loop.
+    <main style={{ ...pageStyle, flexDirection: 'column' }}>
+      <Orbs />
+
+      {/* Centered column — constrains to mobile width on desktop */}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        maxWidth: 420,
+        margin: '0 auto',
+        position: 'relative',
+        zIndex: 1,
+      }}>
+
+      {/* Hero — logo + brand name */}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '60px 28px 40px',
+      }}>
+        <LogoIcon />
+        <h1 style={{
+          fontFamily: "'Nunito', sans-serif",
+          fontSize: 54,
+          fontWeight: 800,
+          color: '#ffffff',
+          letterSpacing: '-0.01em',
+          lineHeight: 1,
+          textAlign: 'center',
+          margin: '0 0 8px',
+          textShadow: 'var(--logo-shadow)',
+        }}>
+          looloop
         </h1>
-        <p className="mt-3 text-sm text-muted">Your 90-day habit &amp; sleep journal companion.</p>
+        <p style={{
+          fontFamily: "'DM Sans', sans-serif",
+          fontSize: 13,
+          fontWeight: 300,
+          color: 'rgba(255,255,255,0.38)',
+          letterSpacing: '0.06em',
+          textAlign: 'center',
+          margin: 0,
+        }}>
+          by doodoodle
+        </p>
       </div>
 
-      {/* Sign-in options */}
-      <div className="flex flex-col gap-3">
+      {/* Buttons */}
+      <div style={{
+        padding: '0 28px 40px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+      }}>
         {isDev && (
           <button
             type="button"
             onClick={handleDevLogin}
             disabled={busy}
-            className="w-full rounded-2xl py-3 text-xs font-mono text-white border border-dashed disabled:opacity-40 active:opacity-70 cursor-pointer"
-            style={{ borderColor: '#FF9F0A', color: '#FF9F0A', background: 'rgba(255,159,10,0.08)' }}
+            style={{
+              width: '100%',
+              borderRadius: 16,
+              padding: '13px 20px',
+              border: '1px dashed rgba(255,159,10,0.5)',
+              background: 'rgba(255,159,10,0.08)',
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 12,
+              color: '#FF9F0A',
+              cursor: busy ? 'not-allowed' : 'pointer',
+              opacity: busy ? 0.4 : 1,
+            }}
           >
-            {loading ? 'Sending…' : 'Dev login — gokulk975@gmail.com'}
+            {loading ? 'Signing in…' : 'Dev login — gokulk975@gmail.com'}
           </button>
         )}
 
-        {/* Google — primary */}
+        {/* Google */}
         <button
           onClick={() => handleOAuth('google')}
           disabled={busy}
-          className="glass flex w-full items-center justify-center gap-3 rounded-2xl py-3.5 text-sm font-semibold text-white disabled:opacity-40 transition-opacity"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 10,
+            borderRadius: 16,
+            padding: '16px 20px',
+            background: 'linear-gradient(145deg, rgba(255,255,255,0.13), rgba(255,255,255,0.06))',
+            border: 'none',
+            borderTop: '0.5px solid rgba(255,255,255,0.28)',
+            borderLeft: '0.5px solid rgba(255,255,255,0.18)',
+            borderRight: '0.5px solid rgba(255,255,255,0.05)',
+            borderBottom: '0.5px solid rgba(255,255,255,0.05)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.50), 0 2px 8px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.12)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            cursor: busy ? 'not-allowed' : 'pointer',
+            width: '100%',
+            opacity: busy ? 0.4 : 1,
+            transition: 'opacity 0.2s',
+          }}
         >
           <GoogleIcon />
-          {oauthLoading === 'google' ? 'Redirecting…' : 'Continue with Google'}
+          <span style={{
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: 15,
+            fontWeight: 500,
+            color: '#ffffff',
+          }}>
+            {oauthLoading === 'google' ? 'Redirecting…' : 'Continue with Google'}
+          </span>
         </button>
 
-<div className="flex items-center gap-3 py-1">
-          <div className="h-px flex-1" style={{ background: '#2C2C2E' }} />
-          <span className="text-xs text-muted">or</span>
-          <div className="h-px flex-1" style={{ background: '#2C2C2E' }} />
+        {/* Divider */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ flex: 1, height: '0.5px', background: 'rgba(255,255,255,0.10)' }} />
+          <span style={{
+            fontSize: 11,
+            color: 'rgba(255,255,255,0.25)',
+            letterSpacing: '0.05em',
+            fontFamily: "'DM Sans', sans-serif",
+          }}>or</span>
+          <div style={{ flex: 1, height: '0.5px', background: 'rgba(255,255,255,0.10)' }} />
         </div>
 
-        {/* Magic link */}
-        <form onSubmit={handleMagicLink} className="flex flex-col gap-3">
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="your@email.com"
-            className="glass w-full rounded-2xl px-4 py-3.5 text-sm text-white placeholder:text-muted outline-none"
-          />
+        {/* Email + magic link */}
+        <form onSubmit={handleMagicLink} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{
+            borderRadius: 14,
+            background: 'rgba(255,255,255,0.06)',
+            borderTop: inputFocused
+              ? '0.5px solid hsla(var(--hue),70%,80%,0.4)'
+              : '0.5px solid rgba(255,255,255,0.16)',
+            borderLeft: inputFocused
+              ? '0.5px solid hsla(var(--hue),70%,80%,0.25)'
+              : '0.5px solid rgba(255,255,255,0.10)',
+            borderRight: '0.5px solid rgba(255,255,255,0.03)',
+            borderBottom: '0.5px solid rgba(255,255,255,0.03)',
+            boxShadow: inputFocused
+              ? '0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px hsla(var(--hue),70%,80%,0.15), inset 0 1px 0 rgba(255,255,255,0.08)'
+              : '0 4px 20px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.06)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            transition: 'border-color 0.2s, box-shadow 0.2s',
+          }}>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onFocus={() => setInputFocused(true)}
+              onBlur={() => setInputFocused(false)}
+              placeholder="your@email.com"
+              className="auth-email-input"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                padding: '16px 18px',
+                fontSize: 14,
+                color: '#ffffff',
+                fontFamily: "'DM Sans', sans-serif",
+                width: '100%',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+
           <button
             type="submit"
             disabled={busy}
-            className="glass w-full rounded-2xl py-3.5 text-sm font-medium text-muted disabled:opacity-40 transition-opacity"
+            style={{
+              width: '100%',
+              borderRadius: 16,
+              padding: '17px 20px',
+              border: 'none',
+              cursor: busy ? 'not-allowed' : 'pointer',
+              background: 'linear-gradient(135deg, hsl(var(--hue), 72%, 68%), hsl(var(--hue), 62%, 50%))',
+              boxShadow: '0 10px 40px hsla(var(--hue),70%,52%,0.50), 0 2px 8px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.22)',
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 15,
+              fontWeight: 500,
+              color: '#ffffff',
+              letterSpacing: '0.03em',
+              opacity: busy ? 0.4 : 1,
+              transition: 'opacity 0.2s',
+            }}
           >
             {loading ? 'Sending…' : 'Send magic link'}
           </button>
         </form>
 
-        {error && <p className="text-sm text-center" style={{ color: '#FF453A' }}>{error}</p>}
+        {error && (
+          <p style={{
+            fontSize: 13,
+            textAlign: 'center',
+            color: '#FF453A',
+            fontFamily: "'DM Sans', sans-serif",
+            margin: 0,
+          }}>
+            {error}
+          </p>
+        )}
+
+        <p style={{
+          textAlign: 'center',
+          fontSize: 10,
+          color: 'rgba(255,255,255,0.16)',
+          lineHeight: 1.6,
+          fontFamily: "'DM Sans', sans-serif",
+          marginTop: 4,
+          marginBottom: 0,
+        }}>
+          By continuing you agree to our Terms &amp; Privacy Policy
+        </p>
       </div>
+      </div>{/* end centered column */}
     </main>
+  )
+}
+
+const pageStyle: React.CSSProperties = {
+  minHeight: '100vh',
+  background: 'hsl(var(--hue), 45%, 7%)',
+  display: 'flex',
+  position: 'relative',
+  overflow: 'clip',
+}
+
+function Orbs() {
+  return (
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+      <div style={{
+        position: 'absolute',
+        width: 340, height: 340,
+        borderRadius: '50%',
+        background: 'hsl(var(--hue), 55%, 55%)',
+        opacity: 0.70,
+        filter: 'blur(80px)',
+        top: -120, left: -60,
+      }} />
+      <div style={{
+        position: 'absolute',
+        width: 260, height: 260,
+        borderRadius: '50%',
+        background: 'hsl(var(--hue), 50%, 40%)',
+        opacity: 0.50,
+        filter: 'blur(70px)',
+        top: 60, right: -80,
+      }} />
+      <div style={{
+        position: 'absolute',
+        width: 200, height: 200,
+        borderRadius: '50%',
+        background: 'hsl(var(--hue), 45%, 68%)',
+        opacity: 0.25,
+        filter: 'blur(90px)',
+        top: 180, left: -40,
+      }} />
+    </div>
+  )
+}
+
+function LogoIcon() {
+  return (
+    <Image
+      src="/doodoodle-logo.svg"
+      alt="Doo Doodle logo"
+      width={72}
+      height={72}
+      unoptimized
+      style={{
+        marginBottom: 16,
+        opacity: 0.95,
+        filter: [
+          'invert(1)',
+          'drop-shadow(0 0 20px hsla(var(--hue),80%,80%,0.5))',
+          'drop-shadow(0 0 40px hsla(var(--hue),70%,70%,0.3))',
+        ].join(' '),
+      }}
+    />
   )
 }
 

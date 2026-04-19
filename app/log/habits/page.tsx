@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useRef, useState, Suspense } from 'react'
+import { useEffect, useMemo, useRef, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@/lib/supabase'
+import { upsertHabitLog } from '@/app/actions/habits'
 import { BottomNav } from '@/components/ui/bottom-nav'
 
 type Mode = 'loading' | 'setup' | 'log' | 'edit' | 'single'
@@ -55,7 +56,7 @@ function HabitsContent() {
   const router       = useRouter()
   const searchParams = useSearchParams()
   const dateParam    = searchParams.get('date')
-  const dates = getPastDates(DAYS_SHOWN)
+  const dates = useMemo(() => getPastDates(DAYS_SHOWN), [])
 
   const [mode, setMode]           = useState<Mode>('loading')
   const [habitNames, setHabitNames] = useState<string[]>([])
@@ -65,7 +66,7 @@ function HabitsContent() {
   const [saving, setSaving]       = useState(false)
   const [error, setError]         = useState<string | null>(null)
 
-  const supabase    = createBrowserClient()
+  const supabase    = useRef(createBrowserClient()).current
   const initialized = useRef(false)
 
   const selectedDate = dates[selectedIdx]
@@ -119,7 +120,7 @@ function HabitsContent() {
     }
 
     load()
-  }, [])
+  }, [supabase, dates, dateParam])
 
   async function saveHabitNames(names: string[], nextMode: Mode) {
     const filtered = names.map(n => n.trim()).filter(Boolean)
@@ -152,13 +153,15 @@ function HabitsContent() {
     const next = { ...current, [name]: !current[name] }
     setChecksByDate(prev => ({ ...prev, [selectedDate]: next }))
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    const result = await upsertHabitLog(selectedDate, next)
+    if (result?.error) {
+      console.error('[toggleHabit] upsert failed:', result.error)
+      return
+    }
 
-    await supabase.from('habit_logs').upsert(
-      { user_id: user.id, date: selectedDate, habits: next },
-      { onConflict: 'user_id,date' }
-    )
+    router.refresh()
+    localStorage.setItem('habit-log-dirty', '1')
+    window.dispatchEvent(new CustomEvent('habit-log-updated'))
   }
 
   function updateField(i: number, value: string) {
@@ -272,12 +275,16 @@ function HabitsContent() {
   async function toggleSingle(name: string) {
     const next = { ...singleChecks, [name]: !singleChecks[name] }
     setChecksByDate(prev => ({ ...prev, [singleDate]: next }))
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-    await supabase.from('habit_logs').upsert(
-      { user_id: user.id, date: singleDate, habits: next },
-      { onConflict: 'user_id,date' }
-    )
+
+    const result = await upsertHabitLog(singleDate, next)
+    if (result?.error) {
+      console.error('[toggleSingle] upsert failed:', result.error)
+      return
+    }
+
+    router.refresh()
+    localStorage.setItem('habit-log-dirty', '1')
+    window.dispatchEvent(new CustomEvent('habit-log-updated'))
   }
 
   if (mode === 'single' && dateParam) {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@/lib/supabase'
 import { BottomNav } from '@/components/ui/bottom-nav'
@@ -89,7 +89,7 @@ export default function SummaryPage() {
   const [loading, setLoading]         = useState(true)
   const [selectedHabitIdx, setSelectedHabitIdx] = useState<number | null>(null)
 
-  const supabase    = createBrowserClient()
+  const supabase    = useRef(createBrowserClient()).current
   const initialized = useRef(false)
 
   // Load habit names + edition once
@@ -104,26 +104,53 @@ export default function SummaryPage() {
           setEdition(data?.edition ?? 'mochi')
         })
     })
-  }, [])
+  }, [supabase])
 
-  // Load logs whenever month/year changes
-  useEffect(() => {
+  // Fetch logs — extracted so we can call it on visibility change too
+  const fetchLogs = useCallback(async () => {
     setLoading(true)
     const { start, end } = getMonthRange(year, month)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const [{ data: hl }, { data: sl }, { data: ml }] = await Promise.all([
+      supabase.from('habit_logs').select('date, habits').eq('user_id', user.id).gte('date', start).lte('date', end),
+      supabase.from('sleep_logs').select('date, bedtime, wake_time, quality').eq('user_id', user.id).gte('date', start).lte('date', end),
+      supabase.from('mood_logs').select('date, mood').eq('user_id', user.id).gte('date', start).lte('date', end),
+    ])
+    setHabitLogs((hl ?? []) as HabitLog[])
+    setSleepLogs((sl ?? []) as SleepLog[])
+    setMoodLogs((ml ?? []) as MoodLog[])
+    setLoading(false)
+  }, [year, month, supabase])
 
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) return
-      const [{ data: hl }, { data: sl }, { data: ml }] = await Promise.all([
-        supabase.from('habit_logs').select('date, habits').eq('user_id', user.id).gte('date', start).lte('date', end),
-        supabase.from('sleep_logs').select('date, bedtime, wake_time, quality').eq('user_id', user.id).gte('date', start).lte('date', end),
-        supabase.from('mood_logs').select('date, mood').eq('user_id', user.id).gte('date', start).lte('date', end),
-      ])
-      setHabitLogs((hl ?? []) as HabitLog[])
-      setSleepLogs((sl ?? []) as SleepLog[])
-      setMoodLogs((ml ?? []) as MoodLog[])
-      setLoading(false)
-    })
-  }, [year, month])
+  // Refetch whenever month/year changes
+  useEffect(() => { fetchLogs() }, [fetchLogs])
+
+  // Refetch on visibility change (tab switch / PWA foreground) AND
+  // on 'habit-log-updated' custom event (in-app navigation, same tab).
+  // localStorage flag ensures even re-mounted instances catch updates.
+  useEffect(() => {
+    function refresh() {
+      if (localStorage.getItem('habit-log-dirty')) {
+        localStorage.removeItem('habit-log-dirty')
+        fetchLogs()
+      }
+    }
+
+    // Check on mount (re-mount after navigation)
+    refresh()
+
+    function onVisible() {
+      if (document.visibilityState === 'visible') refresh()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('habit-log-updated', refresh)
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('habit-log-updated', refresh)
+    }
+  }, [fetchLogs])
 
   function prevMonth() {
     if (month === 0) { setYear(y => y - 1); setMonth(11) }
@@ -283,7 +310,7 @@ export default function SummaryPage() {
               {/* Fan chart — 92% width, centered */}
               <div className="mt-2 mx-auto" style={{ width: '92%' }}>
                 <RadialHabitChart
-                  habitNames={habitNames}
+                  habitNames={sortedHabits}
                   habitByDate={habitByDate}
                   year={year}
                   month={month}

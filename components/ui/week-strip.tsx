@@ -23,34 +23,38 @@ function calcSleepHrs(bedtime: string, wakeTime: string): number {
   return (wake - bed) / 60
 }
 
+const DAY_LETTERS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'] // index = getUTCDay() (Sun=0)
+
 function dayLetter(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'narrow' })
+  const [y, mo, d] = dateStr.split('-').map(Number)
+  return DAY_LETTERS[new Date(Date.UTC(y, mo - 1, d)).getUTCDay()]
 }
 
 function dayNum(dateStr: string): number {
-  return new Date(dateStr + 'T00:00:00').getDate()
+  const [, , d] = dateStr.split('-').map(Number)
+  return d
 }
 
-// Build calendar weeks (Mon–Sun) going back WEEKS_BACK from today's week
+// Build calendar weeks (Mon–Sun) going back WEEKS_BACK from today's week.
+// Uses UTC throughout so server (UTC) and client (any TZ) produce identical date strings.
 const WEEKS_BACK = 12
 
 function buildWeeks(): string[][] {
-  const today = new Date()
-  const dow   = today.getDay()                          // 0=Sun…6=Sat
-  const toMon = dow === 0 ? -6 : 1 - dow               // offset to this Monday
-  const thisMon = new Date(today)
-  thisMon.setDate(today.getDate() + toMon)
+  const todayStr = new Date().toISOString().split('T')[0]          // UTC date YYYY-MM-DD
+  const [y, m, d] = todayStr.split('-').map(Number)
+  const today = new Date(Date.UTC(y, m - 1, d))
+  const dow   = today.getUTCDay()                                   // 0=Sun…6=Sat
+  const toMon = dow === 0 ? -6 : 1 - dow                           // offset to this Monday
 
-  const startMon = new Date(thisMon)
-  startMon.setDate(thisMon.getDate() - WEEKS_BACK * 7)
+  const thisMonMs = today.getTime() + toMon * 86_400_000
+  const startMonMs = thisMonMs - WEEKS_BACK * 7 * 86_400_000
 
   const weeks: string[][] = []
   for (let w = 0; w <= WEEKS_BACK; w++) {
     const week: string[] = []
-    for (let d = 0; d < 7; d++) {
-      const date = new Date(startMon)
-      date.setDate(startMon.getDate() + w * 7 + d)
-      week.push(date.toISOString().split('T')[0])
+    for (let d2 = 0; d2 < 7; d2++) {
+      const ms = startMonMs + (w * 7 + d2) * 86_400_000
+      week.push(new Date(ms).toISOString().split('T')[0])
     }
     weeks.push(week)
   }

@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@800&family=DM+Sans:wght@300;400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -74,10 +76,18 @@
   --accent-glow: hsla(var(--hue), 60%, 80%, 0.18);
   --orb2-glow:   hsla(var(--hue), 55%, 50%, 0.15);
   --missed-dot:  hsla(var(--hue), 60%, 65%, 0.45);
+  --logo-shadow:
+    0 0 30px hsla(var(--hue), 80%, 80%, 0.6),
+    0 0 60px hsla(var(--hue), 70%, 70%, 0.3),
+    0 2px 20px rgba(0,0,0,0.4);
 }
 
 * {
   -webkit-tap-highlight-color: transparent;
+}
+
+.auth-email-input::placeholder {
+  color: rgba(255,255,255,0.22);
 }
 
 html {

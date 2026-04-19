@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, Suspense } from 'react'
+import { useEffect, useMemo, useRef, useState, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@/lib/supabase'
 import { BottomNav } from '@/components/ui/bottom-nav'
@@ -154,10 +154,13 @@ function WeekContent() {
   const [sleepByDate, setSleepByDate] = useState<Record<string, SleepEntry>>({})
   const [loading, setLoading]         = useState(true)
 
-  const supabase    = createBrowserClient()
+  const supabase    = useRef(createBrowserClient()).current
   const namesLoaded = useRef(false)
 
-  const weekDates   = Array.from({ length: 7 }, (_, i) => toStr(addDays(weekStart, i)))
+  const weekDates   = useMemo(
+    () => Array.from({ length: 7 }, (_, i) => toStr(addDays(weekStart, i))),
+    [weekStart]
+  )
   const weekEnd     = addDays(weekStart, 6)
   const isCurrentWk = toStr(getWeekStart(now)) === toStr(weekStart)
 
@@ -175,7 +178,7 @@ function WeekContent() {
       supabase.from('users').select('habit_names').eq('id', user.id).single()
         .then(({ data }) => setHabitNames(data?.habit_names ?? []))
     })
-  }, [])
+  }, [supabase])
 
   useEffect(() => {
     setLoading(true)
@@ -205,7 +208,7 @@ function WeekContent() {
       setSleepByDate(sbd)
       setLoading(false)
     })
-  }, [weekStart])
+  }, [supabase, weekDates])
 
   // ── Stats ─────────────────────────────────────────────────────────────────
 

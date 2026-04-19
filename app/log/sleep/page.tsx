@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, Suspense } from 'react'
+import { useEffect, useMemo, useRef, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@/lib/supabase'
 import { BottomNav } from '@/components/ui/bottom-nav'
@@ -144,7 +144,7 @@ function SleepContent() {
   const router       = useRouter()
   const searchParams = useSearchParams()
   const dateParam    = searchParams.get('date')
-  const days = getMonthDays()
+  const days = useMemo(() => getMonthDays(), [])
   const todayStr = days[0]
 
   const [mode, setMode] = useState<Mode>('chart')
@@ -154,7 +154,7 @@ function SleepContent() {
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
 
-  const supabase = createBrowserClient()
+  const supabase = useRef(createBrowserClient()).current
   const initialized = useRef(false)
 
   const now = new Date()
@@ -205,7 +205,7 @@ function SleepContent() {
     }
 
     load()
-  }, [])
+  }, [supabase, days, dateParam])
 
   function openEdit(date: string) {
     setSelectedDate(date)

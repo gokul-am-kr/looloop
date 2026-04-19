@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a1660"/>
+      <stop offset="100%" stop-color="#07051a"/>
+    </linearGradient>
+    <linearGradient id="arc" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c4beff"/>
+      <stop offset="100%" stop-color="#7f77dd"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square background -->
+  <rect width="512" height="512" rx="128" ry="128" fill="url(#bg)"/>
+  <!-- Loop arc — almost full circle, leaving a gap at top-right -->
+  <path
+    d="M256 100
+       C167 100 100 167 100 256
+       C100 345 167 412 256 412
+       C345 412 412 345 412 256
+       C412 207 388 163 350 136"
+    fill="none"
+    stroke="url(#arc)"
+    stroke-width="40"
+    stroke-linecap="round"/>
+  <!-- Arrowhead at the open end of the loop -->
+  <polyline
+    points="310,100 350,136 316,170"
+    fill="none"
+    stroke="url(#arc)"
+    stroke-width="40"
+    stroke-linecap="round"
+    stroke-linejoin="round"/>
+</svg>

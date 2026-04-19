@@ -1,3 +1,7 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+
 interface RingSpec {
   progress: number   // 0–1 normal; > 1 triggers overlap/coil effect
   color: string
@@ -14,6 +18,9 @@ interface ActivityRingsProps {
   children?: React.ReactNode
 }
 
+// Stagger delay per ring index (ms)
+const RING_DELAYS = [80, 220]
+
 export function ActivityRings({
   rings,
   size,
@@ -22,6 +29,17 @@ export function ActivityRings({
   centerBg,
   children,
 }: ActivityRingsProps) {
+  const [ready, setReady] = useState(false)
+
+  useEffect(() => {
+    // Two rAF ticks ensure the browser paints the initial 0-progress state
+    // before the transition fires, giving a clean 0 → value sweep on mount.
+    const id = requestAnimationFrame(() =>
+      requestAnimationFrame(() => setReady(true))
+    )
+    return () => cancelAnimationFrame(id)
+  }, [])
+
   const center = size / 2
 
   // Inner edge of the innermost ring — used for the optional center fill circle
@@ -75,7 +93,10 @@ export function ActivityRings({
           const r             = center - strokeWidth / 2 - i * (strokeWidth + gap)
           const circumference = 2 * Math.PI * r
           const clamped       = Math.min(Math.max(ring.progress, 0), 1)
-          const offset        = circumference * (1 - clamped)
+          const targetOffset  = circumference * (1 - clamped)
+          // Before ready: offset = full circumference (invisible). After: animate to target.
+          const offset        = ready ? targetOffset : circumference
+          const delay         = RING_DELAYS[i] ?? i * 120
 
           return (
             <g key={i}>
@@ -91,7 +112,9 @@ export function ActivityRings({
                 strokeLinecap="round"
                 strokeDasharray={circumference}
                 strokeDashoffset={offset}
-                style={{ transition: 'stroke-dashoffset 0.4s ease' }}
+                style={{
+                  transition: `stroke-dashoffset 1.1s cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms`,
+                }}
                 filter={ring.glowBlur !== undefined ? `url(#ringGlow${i})` : undefined}
               />
             </g>
